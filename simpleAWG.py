@@ -44,14 +44,14 @@ def open(slot, numberPulses, pri):
     if error < 0:
         log.info("Error Setting Amplitude - {}".format(error))
     log.info("Finished AWG in slot {}...".format(slot))
-    error = __awg.writeDoubleRegisterByNumber(0, (pri - 150E-09), 's')
+    error = __awg.writeDoubleRegisterByNumber(0, (pri - 140E-09), 's')
     if error < 0:
         log.info("Error Writing wait time")
     log.info("Register 0 = {}".format (__awg.readDoubleRegisterByNumber(0, 's')))
     error = __awg.writeRegisterByNumber(1, numberPulses)
     if error < 0:
         log.info("Error Writing number pulses")
-    log.info("Register 0 = {}".format (__awg.readDoubleRegisterByNumber(0, 's')))
+    log.info("Register 1 = {}".format (__awg.readDoubleRegisterByNumber(1, 's')))
     return __awg
     
 def loadWaveform(waveform):

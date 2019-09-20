@@ -48,7 +48,7 @@ def open(slot, captureTime, numberPulses, pri):
     error = __dig.DAQconfig(_CHANNEL, _pointsPerCycle, numberPulses, _TRIGGER_DELAY, key.SD_TriggerModes.SWHVITRIG)
     if error < 0:
         log.info("Error Configuring Acquisition")
-    error = __dig.writeDoubleRegisterByNumber(0, (pri - 150e-09), 's')
+    error = __dig.writeDoubleRegisterByNumber(0, (pri - 140e-09), 's')
     if error < 0:
         log.info("Error Writing Register")
     log.info("Register 0 = {}".format (__dig.readDoubleRegisterByNumber(0, 's')))

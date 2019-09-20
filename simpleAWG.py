@@ -26,7 +26,7 @@ INFINITE_CYCLES = 0
 WAVE_PRESCALER = 0
 DELAY_OUT = 0
 
-def open(slot, numberPulses, pri):
+def open(slot):
     log.info("Configuring AWG in slot {}...".format(slot))
     error = __awg.openWithSlotCompatibility('', 1, slot, key.SD_Compatibility.KEYSIGHT)
     if error < 0:
@@ -43,15 +43,7 @@ def open(slot, numberPulses, pri):
     error = __awg.channelAmplitude(_CHANNEL, 1.0)
     if error < 0:
         log.info("Error Setting Amplitude - {}".format(error))
-    log.info("Finished AWG in slot {}...".format(slot))
-    error = __awg.writeDoubleRegisterByNumber(0, (pri - 140E-09), 's')
-    if error < 0:
-        log.info("Error Writing wait time")
-    log.info("Register 0 = {}".format (__awg.readDoubleRegisterByNumber(0, 's')))
-    error = __awg.writeRegisterByNumber(1, numberPulses)
-    if error < 0:
-        log.info("Error Writing number pulses")
-    log.info("Register 1 = {}".format (__awg.readDoubleRegisterByNumber(1, 's')))
+    log.info("Finished setting up AWG in slot {}...".format(slot))
     return __awg
     
 def loadWaveform(waveform):
@@ -76,10 +68,11 @@ def loadWaveform(waveform):
     error = __awg.AWGstart(_CHANNEL)
     if error < 0:
         log.info("Starting AWG failed! - {}".format(error))
+    log.info("Finished Loading waveform")
     return 1
 
 def close():
-    log.info("Stopping AWG".format())
+    log.info("Stopping AWG...")
     error = __awg.AWGstop(_CHANNEL)
     if error < 0:
         log.info("Stopping AWG failed! - {}".format(error))
@@ -87,6 +80,7 @@ def close():
     if error < 0:
         log.info("Putting AWG into HiZ failed! - {}".format(error))
     __awg.close()
+    log.info("Finished stopping and closing AWG")
 
 if (__name__ == '__main__'):
     import simpleMain
@@ -98,4 +92,6 @@ if (__name__ == '__main__'):
     loadWaveform(wave)
 #    __awg.AWGtrigger(_CHANNEL)
 
-    time.sleep(10)    
+    time.sleep(10)
+    close()
+    

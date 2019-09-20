@@ -30,14 +30,14 @@ def timebase(start, stop, sample_rate):
     timebase = timebase / sample_rate
     return(timebase)
 
-def open(slot, captureTime, numberPulses, pri):
+def open(slot, captureTime):
     log.info("Configuring Digitizer...")
     global timeStamps, _pointsPerCycle
     timeStamps = timebase(0, captureTime, 500e+06)
     _pointsPerCycle = len(timeStamps)
     error = __dig.openWithSlotCompatibility('', 1, slot, key.SD_Compatibility.KEYSIGHT)
     if error < 0:
-        log.info("Error")
+        log.info("Error Opening digitizer in slot #{}".format(slot))
     error = __dig.DAQflush(_CHANNEL)
     if error < 0:
         log.info("Error Flushing")
@@ -45,16 +45,9 @@ def open(slot, captureTime, numberPulses, pri):
                              key.AIN_Coupling.AIN_COUPLING_DC)
     if error < 0:
         log.info("Error Configuring channel")
-    error = __dig.DAQconfig(_CHANNEL, _pointsPerCycle, numberPulses, _TRIGGER_DELAY, key.SD_TriggerModes.SWHVITRIG)
+    error = __dig.DAQconfig(_CHANNEL, _pointsPerCycle, 1, _TRIGGER_DELAY, key.SD_TriggerModes.SWHVITRIG)
     if error < 0:
         log.info("Error Configuring Acquisition")
-    error = __dig.writeDoubleRegisterByNumber(0, (pri - 140e-09), 's')
-    if error < 0:
-        log.info("Error Writing Register")
-    log.info("Register 0 = {}".format (__dig.readDoubleRegisterByNumber(0, 's')))
-    error = __dig.writeRegisterByNumber(1, numberPulses)
-    if error < 0:
-        log.info("Error Writing number pulses")
     return (__dig)
 
 def digitize():

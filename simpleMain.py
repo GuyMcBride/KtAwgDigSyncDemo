@@ -18,10 +18,8 @@ import hvi
 
 DIGITIZER_SLOT = 7
 AWG_SLOT = 5  
-PRI = 50E-06
 PULSE_WIDTH = 9E-06
 CAPTURE_WIDTH = 10E-06
-PULSES_TO_CAPTURE = 20
 CARRIER_FREQUENCY = 10E+06
 
 log = logging.getLogger('Main')
@@ -61,8 +59,8 @@ if (__name__ == '__main__'):
     wave = np.sin(hertz_to_rad(CARRIER_FREQUENCY) * t)
     wave = np.concatenate([wave, np.zeros(100)])
     
-    awg_h = awg.open(AWG_SLOT, PULSES_TO_CAPTURE, PRI)
-    dig_h = dig.open(DIGITIZER_SLOT, CAPTURE_WIDTH, PULSES_TO_CAPTURE, PRI)
+    awg_h = awg.open(AWG_SLOT)
+    dig_h = dig.open(DIGITIZER_SLOT, CAPTURE_WIDTH)
     
     awg.loadWaveform(wave)
     dig.digitize()
@@ -73,9 +71,8 @@ if (__name__ == '__main__'):
 
     hvi.start()
 
-    for ii in range(PULSES_TO_CAPTURE):
-        samples = dig.get_data()
-        plt.plot(dig.timeStamps / 1e-06, samples)
+    samples = dig.get_data()
+    plt.plot(dig.timeStamps / 1e-06, samples)
     
     hvi.close()
     dig.close()

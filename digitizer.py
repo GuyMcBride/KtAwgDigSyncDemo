@@ -17,7 +17,7 @@ import keysightSD1 as key
 
 # globals to this module (essentially this is a singleton class)
 __dig = key.SD_AIN()
-_CHANNEL = 1
+_channel = 1
 _TRIGGER_DELAY = 0
 
 _pointsPerCycle = 0
@@ -30,35 +30,36 @@ def timebase(start, stop, sample_rate):
     timebase = timebase / sample_rate
     return(timebase)
 
-def open(slot, captureTime):
+def open(slot, channel, captureTime):
     log.info("Configuring Digitizer...")
-    global timeStamps, _pointsPerCycle
+    global timeStamps, _pointsPerCycle, _channel
+    _channel = channel
     timeStamps = timebase(0, captureTime, 500e+06)
     _pointsPerCycle = len(timeStamps)
     error = __dig.openWithSlotCompatibility('', 1, slot, key.SD_Compatibility.KEYSIGHT)
     if error < 0:
         log.info("Error Opening digitizer in slot #{}".format(slot))
-    error = __dig.DAQflush(_CHANNEL)
+    error = __dig.DAQflush(_channel)
     if error < 0:
         log.info("Error Flushing")
-    error = __dig.channelInputConfig(_CHANNEL, 2.0, key.AIN_Impedance.AIN_IMPEDANCE_50, 
+    error = __dig.channelInputConfig(_channel, 2.0, key.AIN_Impedance.AIN_IMPEDANCE_50, 
                              key.AIN_Coupling.AIN_COUPLING_DC)
     if error < 0:
         log.info("Error Configuring channel")
-    error = __dig.DAQconfig(_CHANNEL, _pointsPerCycle, 1, _TRIGGER_DELAY, key.SD_TriggerModes.SWHVITRIG)
+    error = __dig.DAQconfig(_channel, _pointsPerCycle, 1, _TRIGGER_DELAY, key.SD_TriggerModes.SWHVITRIG)
     if error < 0:
         log.info("Error Configuring Acquisition")
     return (__dig)
 
 def digitize():
-    error = __dig.DAQstart(_CHANNEL)
+    error = __dig.DAQstart(_channel)
     if error < 0:
         log.info("Error Starting Digitizer")
     
 def get_data():
     TIMEOUT = 10000
     LSB = 1/ 2**14
-    dataRead = __dig.DAQread(_CHANNEL, _pointsPerCycle, TIMEOUT)
+    dataRead = __dig.DAQread(_channel, _pointsPerCycle, TIMEOUT)
     return(dataRead * LSB)
     
 def close():
@@ -68,6 +69,6 @@ def close():
 # MAIN!!!!!
 ################  ####################################    
 if (__name__ == '__main__'):
-    open()
+    open(5, 1, 100e-6)
     print(digitize())
     close()

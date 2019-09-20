@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 # globals to this module (essentially this is a singleton class)
 __awg = key.SD_AOU()
-_CHANNEL = 1
+_channel = 1
 
 # Queue constants
 SINGLE_CYCLE = 1
@@ -26,21 +26,23 @@ INFINITE_CYCLES = 0
 WAVE_PRESCALER = 0
 DELAY_OUT = 0
 
-def open(slot):
+def open(slot, channel):
+    global _channel
     log.info("Configuring AWG in slot {}...".format(slot))
+    _channel = channel
     error = __awg.openWithSlotCompatibility('', 1, slot, key.SD_Compatibility.KEYSIGHT)
     if error < 0:
         log.info("Error Opening - {}".format(error))
     __awg.waveformFlush()
     if error < 0:
         log.info("Error Flushing waveforms - {}".format(error))
-    __awg.AWGflush(_CHANNEL)
+    __awg.AWGflush(_channel)
     if error < 0:
         log.info("Error Flushing AWG - {}".format(error))
-    error = __awg.channelWaveShape(_CHANNEL, key.SD_Waveshapes.AOU_AWG)
+    error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_AWG)
     if error < 0:
         log.info("Error Setting Waveshape - {}".format(error))
-    error = __awg.channelAmplitude(_CHANNEL, 1.0)
+    error = __awg.channelAmplitude(_channel, 1.0)
     if error < 0:
         log.info("Error Setting Amplitude - {}".format(error))
     log.info("Finished setting up AWG in slot {}...".format(slot))
@@ -59,13 +61,13 @@ def loadWaveform(waveform):
     if error < 0:
         log.info("Error Loading Wave - {}".format(error))
     log.info("Enqueueing waveform #1")
-    error = __awg.AWGqueueWaveform(_CHANNEL, 1, key.SD_TriggerModes.SWHVITRIG, DELAY_OUT, 1, WAVE_PRESCALER)
+    error = __awg.AWGqueueWaveform(_channel, 1, key.SD_TriggerModes.SWHVITRIG, DELAY_OUT, 1, WAVE_PRESCALER)
     if error < 0:
         log.info("Queueing waveform failed! - {}".format(error))
-    error = __awg.AWGqueueConfig(_CHANNEL, key.SD_QueueMode.CYCLIC)
+    error = __awg.AWGqueueConfig(_channel, key.SD_QueueMode.CYCLIC)
     if error < 0:
         log.info("Configure cyclic mode failed! - {}".format(error))
-    error = __awg.AWGstart(_CHANNEL)
+    error = __awg.AWGstart(_channel)
     if error < 0:
         log.info("Starting AWG failed! - {}".format(error))
     log.info("Finished Loading waveform")
@@ -73,10 +75,10 @@ def loadWaveform(waveform):
 
 def close():
     log.info("Stopping AWG...")
-    error = __awg.AWGstop(_CHANNEL)
+    error = __awg.AWGstop(_channel)
     if error < 0:
         log.info("Stopping AWG failed! - {}".format(error))
-    error = __awg.channelWaveShape(_CHANNEL, key.SD_Waveshapes.AOU_HIZ)
+    error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_HIZ)
     if error < 0:
         log.info("Putting AWG into HiZ failed! - {}".format(error))
     __awg.close()
@@ -88,7 +90,7 @@ if (__name__ == '__main__'):
     t = simpleMain.timebase(0, 10e-6, 1e9)
     wave = np.sin(simpleMain.hertz_to_rad(20E+06) * t)
     
-    open()
+    open(2, 1)
     loadWaveform(wave)
 #    __awg.AWGtrigger(_CHANNEL)
 

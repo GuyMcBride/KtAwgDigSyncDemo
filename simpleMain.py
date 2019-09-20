@@ -16,9 +16,12 @@ import simpleAWG as awg
 import digitizer as dig
 import hvi
 
-DIGITIZER_SLOT = 7
-AWG_SLOT = 5  
-PULSE_WIDTH = 9E-06
+DIGITIZER_SLOT = 5
+DIGITIZER_CHANNEL = 1
+AWG_SLOT = 2
+AWG_CHANNEL = 4
+
+PULSE_WIDTH = 5E-06
 CAPTURE_WIDTH = 10E-06
 CARRIER_FREQUENCY = 10E+06
 
@@ -26,7 +29,7 @@ log = logging.getLogger('Main')
 
 def setup_logging(
     default_path='logging.json',
-    default_level=logging.DEBUG,
+    default_level=logging.INFO,
     env_key='LOG_CFG'
 ):
     """Setup logging configuration"""
@@ -59,8 +62,8 @@ if (__name__ == '__main__'):
     wave = np.sin(hertz_to_rad(CARRIER_FREQUENCY) * t)
     wave = np.concatenate([wave, np.zeros(100)])
     
-    awg_h = awg.open(AWG_SLOT)
-    dig_h = dig.open(DIGITIZER_SLOT, CAPTURE_WIDTH)
+    awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
+    dig_h = dig.open(DIGITIZER_SLOT, DIGITIZER_CHANNEL, CAPTURE_WIDTH)
     
     awg.loadWaveform(wave)
     dig.digitize()

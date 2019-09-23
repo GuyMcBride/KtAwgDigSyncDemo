@@ -21,6 +21,9 @@ DIGITIZER_CHANNEL = 1
 AWG_SLOT = 2
 AWG_CHANNEL = 4
 
+AWG_DELAY = 0
+DIGITIZER_DELAY = 0
+
 PULSE_WIDTH = 5E-06
 CAPTURE_WIDTH = 10E-06
 CARRIER_FREQUENCY = 10E+06
@@ -65,8 +68,8 @@ if (__name__ == '__main__'):
     awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
     dig_h = dig.open(DIGITIZER_SLOT, DIGITIZER_CHANNEL, CAPTURE_WIDTH)
     
-    awg.loadWaveform(wave)
-    dig.digitize()
+    awg.loadWaveform(wave, AWG_DELAY)
+    dig.digitize(DIGITIZER_DELAY)
     
     hvi_path = os.getcwd() + '\\SyncStart.hvi'
     hvi_mapping = {'Module 1': awg_h, 'Module 0': dig_h}

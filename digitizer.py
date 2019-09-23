@@ -18,8 +18,6 @@ import keysightSD1 as key
 # globals to this module (essentially this is a singleton class)
 __dig = key.SD_AIN()
 _channel = 1
-_TRIGGER_DELAY = 0
-
 _pointsPerCycle = 0
 timeStamps = []
 
@@ -46,12 +44,12 @@ def open(slot, channel, captureTime):
                              key.AIN_Coupling.AIN_COUPLING_DC)
     if error < 0:
         log.info("Error Configuring channel")
-    error = __dig.DAQconfig(_channel, _pointsPerCycle, 1, _TRIGGER_DELAY, key.SD_TriggerModes.SWHVITRIG)
-    if error < 0:
-        log.info("Error Configuring Acquisition")
     return (__dig)
 
-def digitize():
+def digitize(trigger_delay):
+    error = __dig.DAQconfig(_channel, _pointsPerCycle, 1, trigger_delay, key.SD_TriggerModes.SWHVITRIG)
+    if error < 0:
+        log.info("Error Configuring Acquisition")
     error = __dig.DAQstart(_channel)
     if error < 0:
         log.info("Error Starting Digitizer")
@@ -69,6 +67,6 @@ def close():
 # MAIN!!!!!
 ################  ####################################    
 if (__name__ == '__main__'):
-    open(5, 1, 100e-6)
+    open(5, 1, 100e-6, 0)
     print(digitize())
     close()

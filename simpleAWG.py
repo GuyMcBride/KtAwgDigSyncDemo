@@ -24,7 +24,6 @@ _channel = 1
 SINGLE_CYCLE = 1
 INFINITE_CYCLES = 0
 WAVE_PRESCALER = 0
-DELAY_OUT = 0
 
 def open(slot, channel):
     global _channel
@@ -48,7 +47,7 @@ def open(slot, channel):
     log.info("Finished setting up AWG in slot {}...".format(slot))
     return __awg
     
-def loadWaveform(waveform):
+def loadWaveform(waveform, start_delay):
     log.info("Loading waveform...")
     if len(waveform) == 0:
         log.info("Waveform is empty")
@@ -61,7 +60,7 @@ def loadWaveform(waveform):
     if error < 0:
         log.info("Error Loading Wave - {}".format(error))
     log.info("Enqueueing waveform #1")
-    error = __awg.AWGqueueWaveform(_channel, 1, key.SD_TriggerModes.SWHVITRIG, DELAY_OUT, 1, WAVE_PRESCALER)
+    error = __awg.AWGqueueWaveform(_channel, 1, key.SD_TriggerModes.SWHVITRIG, start_delay, 1, WAVE_PRESCALER)
     if error < 0:
         log.info("Queueing waveform failed! - {}".format(error))
     error = __awg.AWGqueueConfig(_channel, key.SD_QueueMode.CYCLIC)

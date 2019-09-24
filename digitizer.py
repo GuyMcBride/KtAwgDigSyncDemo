@@ -29,13 +29,13 @@ def timebase(start, stop, sample_rate):
     timebase = timebase / sample_rate
     return(timebase)
 
-def open(slot, channel, captureTime):
+def open(chassis, slot, channel, captureTime):
     log.info("Configuring Digitizer...")
     global timeStamps, _pointsPerCycle, _channel
     _channel = channel
     timeStamps = timebase(0, captureTime, _SAMPLE_RATE)
     _pointsPerCycle = len(timeStamps)
-    error = __dig.openWithSlotCompatibility('', 1, slot, key.SD_Compatibility.KEYSIGHT)
+    error = __dig.openWithSlotCompatibility('', chassis, slot, key.SD_Compatibility.KEYSIGHT)
     if error < 0:
         log.info("Error Opening digitizer in slot #{}".format(slot))
     error = __dig.DAQflush(_channel)
@@ -70,6 +70,7 @@ def close():
 # MAIN!!!!!
 ################  ####################################    
 if (__name__ == '__main__'):
-    open(5, 1, 100e-6, 0)
-    print(digitize())
+    print("WARNING - YOU ARE RUNNING TEST CODE")
+    open(1, 5, 1, 100e-6, 0)
+    print(digitize(0))
     close()

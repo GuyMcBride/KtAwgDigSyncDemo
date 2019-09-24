@@ -25,11 +25,11 @@ SINGLE_CYCLE = 1
 INFINITE_CYCLES = 0
 WAVE_PRESCALER = 0
 
-def open(slot, channel):
+def open(chassis, slot, channel):
     global _channel
     log.info("Configuring AWG in slot {}...".format(slot))
     _channel = channel
-    error = __awg.openWithSlotCompatibility('', 1, slot, key.SD_Compatibility.KEYSIGHT)
+    error = __awg.openWithSlotCompatibility('', chassis, slot, key.SD_Compatibility.KEYSIGHT)
     if error < 0:
         log.info("Error Opening - {}".format(error))
     __awg.waveformFlush()
@@ -86,13 +86,16 @@ def close():
     log.info("Finished stopping and closing AWG")
 
 if (__name__ == '__main__'):
+
+    print("WARNING - YOU ARE RUNNING TEST CODE")
+    
     import simpleMain
     
     t = simpleMain.timebase(0, 10e-6, 1e9)
     wave = np.sin(simpleMain.hertz_to_rad(20E+06) * t)
     
-    open(2, 1)
-    loadWaveform(wave)
+    open(1, 2, 1)
+    loadWaveform(wave, 0)
 #    __awg.AWGtrigger(_CHANNEL)
 
     time.sleep(10)

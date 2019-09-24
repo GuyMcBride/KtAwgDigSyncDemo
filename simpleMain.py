@@ -21,8 +21,8 @@ DIGITIZER_CHANNEL = 1
 AWG_SLOT = 2
 AWG_CHANNEL = 4
 
-AWG_DELAY = 0
-DIGITIZER_DELAY = 0
+AWG_DELAY = 0e-9
+DIGITIZER_DELAY = 20e-9
 
 PULSE_WIDTH = 5E-06
 CAPTURE_WIDTH = 10E-06
@@ -79,6 +79,7 @@ if (__name__ == '__main__'):
 
     samples = dig.get_data()
     plt.plot(dig.timeStamps / 1e-06, samples)
+    plt.xlabel("us")
     
     hvi.close()
     dig.close()

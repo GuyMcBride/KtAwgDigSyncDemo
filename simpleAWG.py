@@ -59,7 +59,9 @@ def loadWaveform(waveform, start_delay):
     error = __awg.waveformLoad(wave, 1)
     if error < 0:
         log.info("Error Loading Wave - {}".format(error))
-    log.info("Enqueueing waveform #1")
+    start_delay = start_delay / 10E-09 # expressed in 10ns
+    start_delay = int(np.round(start_delay))
+    log.info("Enqueueing waveform #1, StartDelay = {}".format(start_delay))
     error = __awg.AWGqueueWaveform(_channel, 1, key.SD_TriggerModes.SWHVITRIG, start_delay, 1, WAVE_PRESCALER)
     if error < 0:
         log.info("Queueing waveform failed! - {}".format(error))

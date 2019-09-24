@@ -20,6 +20,7 @@ __dig = key.SD_AIN()
 _channel = 1
 _pointsPerCycle = 0
 timeStamps = []
+_SAMPLE_RATE = 500E+06
 
 def timebase(start, stop, sample_rate):
     start_sample = int(start * sample_rate)
@@ -32,7 +33,7 @@ def open(slot, channel, captureTime):
     log.info("Configuring Digitizer...")
     global timeStamps, _pointsPerCycle, _channel
     _channel = channel
-    timeStamps = timebase(0, captureTime, 500e+06)
+    timeStamps = timebase(0, captureTime, _SAMPLE_RATE)
     _pointsPerCycle = len(timeStamps)
     error = __dig.openWithSlotCompatibility('', 1, slot, key.SD_Compatibility.KEYSIGHT)
     if error < 0:
@@ -47,6 +48,8 @@ def open(slot, channel, captureTime):
     return (__dig)
 
 def digitize(trigger_delay):
+    trigger_delay = trigger_delay * _SAMPLE_RATE # expressed in samples
+    trigger_delay = int(np.round(trigger_delay))
     error = __dig.DAQconfig(_channel, _pointsPerCycle, 1, trigger_delay, key.SD_TriggerModes.SWHVITRIG)
     if error < 0:
         log.info("Error Configuring Acquisition")

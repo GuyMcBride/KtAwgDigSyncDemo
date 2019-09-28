@@ -14,6 +14,8 @@ import keysightSD1 as key
 __log = logging.getLogger(__name__)
 
 __hvi = key.SD_HVI()
+__awg = None
+__dig = None
 
 class HviError(Exception):
     """Basic exception for errors raised by HVI"""
@@ -29,6 +31,7 @@ class HviError(Exception):
         return key.SD_Error.getErrorMessage(self._error)
 
 def init(hviFileName, mapping):
+    global __awg, __dig
     __log.info("Opening HVI file: {}".format(hviFileName))
     hviID = __hvi.open(hviFileName)
     if hviID ==  key.SD_Error.RESOURCE_NOT_READY: #Only for old library

@@ -73,7 +73,7 @@ if (__name__ == '__main__'):
     dig.digitize(DIGITIZER_DELAY)
     
     hvi_path = os.getcwd() + '\\SyncStart.hvi'
-    hvi_mapping = {'Module 1': awg_h, 'Module 0': dig_h}
+    hvi_mapping = {'AWG': awg_h, 'DIG': dig_h}
     hvi.init(hvi_path, hvi_mapping)
 
     hvi.start()

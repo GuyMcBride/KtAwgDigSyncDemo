@@ -6,13 +6,11 @@ Created on Sat Jul 27 12:33:33 2019
 """
 
 import os
-import sys
-import time
 import json
 import numpy as np
 import logging.config
 import matplotlib.pyplot as plt
-import simpleAWG as awg
+import AWG as awg
 import digitizer as dig
 import hvi
 

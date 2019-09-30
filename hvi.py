@@ -14,8 +14,6 @@ import keysightSD1 as key
 __log = logging.getLogger(__name__)
 
 __hvi = key.SD_HVI()
-__awg = None
-__dig = None
 
 class HviError(Exception):
     """Basic exception for errors raised by HVI"""
@@ -31,7 +29,6 @@ class HviError(Exception):
         return key.SD_Error.getErrorMessage(self._error)
 
 def init(hviFileName, mapping):
-    global __awg, __dig
     __log.info("Opening HVI file: {}".format(hviFileName))
     hviID = __hvi.open(hviFileName)
     if hviID ==  key.SD_Error.RESOURCE_NOT_READY: #Only for old library
@@ -43,7 +40,7 @@ def init(hviFileName, mapping):
     elif hviID < 0:
         __log.error("Opening HVI - {}: {}".format(hviID, key.SD_Error.getErrorMessage(hviID)))
         raise HviError(hviID, "Opening HVI - {}: {}".format(hviID, key.SD_Error.getErrorMessage(hviID)))
-
+        
     error  = __hvi.releaseHW()
     if (error < 0):
         __log.error("Releasing HW - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
@@ -83,8 +80,27 @@ def init(hviFileName, mapping):
         __log.error(error)
         raise HviError(cmpID, error)
         
-def start():
+def start(number_pulses = 1, pri = 0):
     __log.info("Starting HVI...")
+    # There is 140ns of intrinsic 'gap' in the HVI loop.
+    gap = pri - 140e-09
+    if gap < 0: gap = 0
+    error = __hvi.writeDoubleConstantWithUserName('AWG', 'GapTime', gap, 's')
+    if (error < 0):
+        __log.error("Writing AWG gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+
+    error = __hvi.writeDoubleConstantWithUserName('DIG', 'GapTime', gap, 's')
+    if (error < 0):
+        __log.error("Writing DIG gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+
+    error = __hvi.writeIntegerConstantWithUserName('AWG', 'numberOfPulses', gap)
+    if (error < 0):
+        __log.error("Writing AWG numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+
+    error = __hvi.writeIntegerConstantWithUserName('DIG', 'numberOfPulses', gap)
+    if (error < 0):
+        __log.error("Writing DIG gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+    
     error = __hvi.start()
     if (error < 0):
         __log.error("Starting HVI- {}: {}".format(error, key.SD_Error.getErrorMessage(error)))

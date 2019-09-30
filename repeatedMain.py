@@ -71,7 +71,7 @@ if (__name__ == '__main__'):
     dig_h = dig.open(CHASSIS, DIGITIZER_SLOT, DIGITIZER_CHANNEL, CAPTURE_WIDTH)
     
     awg.loadWaveform(wave, AWG_DELAY)
-    dig.digitize(DIGITIZER_DELAY)
+    dig.digitize(DIGITIZER_DELAY, NUMBER_OF_PULSES)
     
     hvi_path = os.getcwd() + '\\SyncStartRepeated.hvi'
     hvi_mapping = {'AWG': awg_h, 'DIG': dig_h}

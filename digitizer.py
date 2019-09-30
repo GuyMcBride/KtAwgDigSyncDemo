@@ -47,10 +47,10 @@ def open(chassis, slot, channel, captureTime):
         log.info("Error Configuring channel")
     return (__dig)
 
-def digitize(trigger_delay):
+def digitize(trigger_delay, number_of_pulses = 1):
     trigger_delay = trigger_delay * _SAMPLE_RATE # expressed in samples
     trigger_delay = int(np.round(trigger_delay))
-    error = __dig.DAQconfig(_channel, _pointsPerCycle, 1, trigger_delay, key.SD_TriggerModes.SWHVITRIG)
+    error = __dig.DAQconfig(_channel, _pointsPerCycle, number_of_pulses, trigger_delay, key.SD_TriggerModes.SWHVITRIG)
     if error < 0:
         log.info("Error Configuring Acquisition")
     error = __dig.DAQstart(_channel)

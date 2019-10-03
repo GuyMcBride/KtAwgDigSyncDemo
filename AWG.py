@@ -44,6 +44,10 @@ def open(chassis, slot, channel):
     error = __awg.channelAmplitude(_channel, 1.0)
     if error < 0:
         log.info("Error Setting Amplitude - {}".format(error))
+    log.info("Setting front panel trigger to Output...")
+    error = __awg.triggerIOconfig(key.SD_TriggerDirections.AOU_TRG_OUT)
+    if error < 0:
+        log.info("Error Setting Trigger to output - {}".format(error))
     log.info("Finished setting up AWG in slot {}...".format(slot))
     return __awg
     

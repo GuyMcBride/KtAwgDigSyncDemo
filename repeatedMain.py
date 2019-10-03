@@ -21,14 +21,14 @@ AWG_SLOT = 2
 AWG_CHANNEL = 4
 
 AWG_DELAY = 0e-9
-DIGITIZER_DELAY = 20e-9
+DIGITIZER_DELAY = 0e-9
 
 PULSE_WIDTH = 5E-06
 CAPTURE_WIDTH = 10E-06
 CARRIER_FREQUENCY = 10E+06
 
 PRI = 20.0E-6
-NUMBER_OF_PULSES = 20
+NUMBER_OF_PULSES = 15
 
 log = logging.getLogger('Main')
 
@@ -79,9 +79,10 @@ if (__name__ == '__main__'):
 
     hvi.start(NUMBER_OF_PULSES, PRI)
 
-    samples = dig.get_data()
-    plt.plot(dig.timeStamps / 1e-06, samples)
     plt.xlabel("us")
+    for ii in range(NUMBER_OF_PULSES):
+        samples = dig.get_data()
+        plt.plot(dig.timeStamps / 1e-06, samples)
     
     hvi.close()
     dig.close()

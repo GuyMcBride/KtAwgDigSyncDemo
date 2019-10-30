@@ -10,6 +10,7 @@ import time
 import random
 import numpy as np
 import logging
+#import matplotlib.pyplot as plt
 
 sys.path.append(r'C:\Program Files (x86)\Keysight\SD1\Libraries\Python')
 import keysightSD1 as key
@@ -51,22 +52,23 @@ def open(chassis, slot, channel):
     log.info("Finished setting up AWG in slot {}...".format(slot))
     return __awg
     
-def loadWaveform(waveform, start_delay):
+def loadWaveform(waveform, start_delay, waveId = 1):
     log.info("Loading waveform...")
     if len(waveform) == 0:
         log.info("Waveform is empty")
         return -1
+#    plt.plot(waveform)
     wave = key.SD_Wave()
     error = wave.newFromArrayDouble(key.SD_WaveformTypes.WAVE_ANALOG, waveform)
     if error < 0:
         log.info("Error Creating Wave - {}".format(error))
-    error = __awg.waveformLoad(wave, 1)
+    error = __awg.waveformLoad(wave, waveId)
     if error < 0:
         log.info("Error Loading Wave - {}".format(error))
     start_delay = start_delay / 10E-09 # expressed in 10ns
     start_delay = int(np.round(start_delay))
-    log.info("Enqueueing waveform #1, StartDelay = {}".format(start_delay))
-    error = __awg.AWGqueueWaveform(_channel, 1, key.SD_TriggerModes.SWHVITRIG, start_delay, 1, WAVE_PRESCALER)
+    log.info("Enqueueing waveform {}, StartDelay = {}".format(waveId, start_delay))
+    error = __awg.AWGqueueWaveform(_channel, waveId, key.SD_TriggerModes.SWHVITRIG, start_delay, 1, WAVE_PRESCALER)
     if error < 0:
         log.info("Queueing waveform failed! - {}".format(error))
     error = __awg.AWGqueueConfig(_channel, key.SD_QueueMode.CYCLIC)
@@ -76,6 +78,14 @@ def loadWaveform(waveform, start_delay):
     if error < 0:
         log.info("Starting AWG failed! - {}".format(error))
     log.info("Finished Loading waveform")
+    return 1
+
+def loadWaveforms(waveforms, start_delays):
+    log.info("Loading waveforms...")
+    if len(waveforms) != len(start_delays):
+        log.error("There must be the same number of waveforms and start_delays")
+    for ii in range(len(waveforms)):
+        loadWaveform(waveforms[ii], start_delays[ii], ii + 1)
     return 1
 
 def close():
@@ -95,12 +105,12 @@ if (__name__ == '__main__'):
     
     import simpleMain
     
-    t = simpleMain.timebase(0, 10e-6, 1e9)
+    t = simpleMain.timebase(0, 100e-6, 1e9)
     wave = np.sin(simpleMain.hertz_to_rad(20E+06) * t)
     
     open(1, 2, 1)
     loadWaveform(wave, 0)
-#    __awg.AWGtrigger(_CHANNEL)
+    __awg.AWGtrigger(_channel)
 
     time.sleep(10)
     close()

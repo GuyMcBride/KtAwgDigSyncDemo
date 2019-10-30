@@ -16,16 +16,16 @@ import hvi
 
 CHASSIS = 1
 DIGITIZER_SLOT = 5
-DIGITIZER_CHANNEL = 1
+DIGITIZER_CHANNEL = 2
 AWG_SLOT = 2
 AWG_CHANNEL = 4
 
-AWG_DELAY = 0e-9
+AWG_DELAYS = [0e-9, 0E-09]
 DIGITIZER_DELAY = 0e-9
 
 PULSE_WIDTH = 5E-06
 CAPTURE_WIDTH = 10E-06
-CARRIER_FREQUENCY = 10E+06
+CARRIER_FREQUENCIES = [10E+06, 20E+6]
 
 PRI = 20.0E-6
 NUMBER_OF_PULSES = 15
@@ -64,13 +64,18 @@ if (__name__ == '__main__'):
 
     #Create a simple pulse of carrier
     t = timebase(0, PULSE_WIDTH, 1e+09)
-    wave = np.sin(hertz_to_rad(CARRIER_FREQUENCY) * t)
-    wave = np.concatenate([wave, np.zeros(100)])
+    waves = []
+    for carrier in CARRIER_FREQUENCIES:
+        wave = np.sin(hertz_to_rad(carrier) * t)
+        wave = np.concatenate([wave, np.zeros(100)])
+        waves.append(wave)
+    
     
     awg_h = awg.open(CHASSIS, AWG_SLOT, AWG_CHANNEL)
     dig_h = dig.open(CHASSIS, DIGITIZER_SLOT, DIGITIZER_CHANNEL, CAPTURE_WIDTH)
     
-    awg.loadWaveform(wave, AWG_DELAY)
+#    awg.loadWaveform(waves[0], AWG_DELAYS[0])
+    awg.loadWaveforms(waves, AWG_DELAYS)
     dig.digitize(DIGITIZER_DELAY, NUMBER_OF_PULSES)
     
     hvi_path = os.getcwd() + '\\SyncStartRepeated.hvi'

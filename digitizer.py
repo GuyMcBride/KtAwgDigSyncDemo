@@ -58,9 +58,12 @@ def digitize(trigger_delay, number_of_pulses = 1):
         log.info("Error Starting Digitizer")
     
 def get_data():
-    TIMEOUT = 1000
+    TIMEOUT = 10000
     LSB = 1/ 2**14
-    dataRead = __dig.DAQread(_channel, _pointsPerCycle, TIMEOUT)
+    log.info("Attempting to read {} points".format(_pointsPerCycle))
+    dataRead, status = __dig.DAQread(_channel, _pointsPerCycle, TIMEOUT)
+    if status < 1:
+        log.warn("Read terminated unexpectedly: {}".format(status))
     log.info("Read {} samples".format(len(dataRead)))
     return(dataRead * LSB)
     

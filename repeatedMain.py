@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import AWG as awg
 import digitizer as dig
 import hvi
+import time
 
 CHASSIS = 1
 DIGITIZER_SLOT = 5
@@ -28,7 +29,7 @@ CAPTURE_WIDTH = 10E-06
 CARRIER_FREQUENCIES = [10E+06, 20E+6]
 
 PRI = 20.0E-6
-NUMBER_OF_PULSES = 15
+NUMBER_OF_PULSES = 1000
 
 log = logging.getLogger('Main')
 
@@ -83,11 +84,18 @@ if (__name__ == '__main__'):
     hvi.init(hvi_path, hvi_mapping)
 
     hvi.start(NUMBER_OF_PULSES, PRI)
+    
+#    time.sleep(10) # This shows the 1024 cycles limit bug
+    log.info("Reading Waveforms....")
 
     plt.xlabel("us")
     for ii in range(NUMBER_OF_PULSES):
         samples = dig.get_data()
-        plt.plot(dig.timeStamps / 1e-06, samples)
+        if len(samples) == 0:
+            log.error("Reading appears to have timed out after {} pulses".format(ii))
+            break
+        if ii < 20: # do not plot too many waves
+            plt.plot(dig.timeStamps / 1e-06, samples)
     
     hvi.close()
     dig.close()

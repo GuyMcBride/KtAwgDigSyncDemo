@@ -27,13 +27,14 @@ class HviError(Exception):
     @property
     def error_message(self):
         return key.SD_Error.getErrorMessage(self._error)
+    
 
 def __compile_download():
     __log.info("Compiling HVI...")
     cmpID = __hvi.compile()
     if cmpID != 0:
         error = "HVI compile failed : {}".format(key.SD_Error.getErrorMessage(cmpID))
-        __log.error(error)
+        __log.debug(error)
         raise HviError(cmpID, error)
     __log.info("Loading HVI...")
     cmpID = __hvi.load()
@@ -89,23 +90,23 @@ def start(number_pulses = 1, pri = 0):
     if gap < 0: gap = 0
     error = __hvi.writeDoubleConstantWithUserName('AWG', 'GapTime', gap, 's')
     if (error < 0):
-        __log.error("Writing AWG gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+        __log.warning("Writing AWG gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
 
     error = __hvi.writeDoubleConstantWithUserName('DIG', 'GapTime', gap, 's')
     if (error < 0):
-        __log.error("Writing DIG gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+        __log.warning("Writing DIG gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
 
     error = __hvi.writeIntegerConstantWithUserName('AWG', 'NumberOfPulses', number_pulses)
     if (error < 0):
-        __log.error("Writing AWG numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+        __log.warning("Writing AWG numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
 
     error = __hvi.writeIntegerConstantWithUserName('DIG', 'NumberOfPulses', number_pulses)
     if (error < 0):
-        __log.error("Writing DIG numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+        __log.warning("Writing DIG numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
     
     [error, digNumPulses] = __hvi.readIntegerConstantWithUserName('DIG', 'NumberOfPulses')
     if (error < 0):
-        __log.error("Reading DIG numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+        __log.warning("Reading DIG numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
     else:
         __log.info("DIG numberOfPulses Register = {}".format(digNumPulses))
 

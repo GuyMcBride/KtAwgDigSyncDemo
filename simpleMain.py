@@ -14,10 +14,10 @@ import AWG as awg
 import digitizer as dig
 import hvi
 
-CHASSIS = 1
-DIGITIZER_SLOT = 5
+CHASSIS = 0
+DIGITIZER_SLOT = 6
 DIGITIZER_CHANNEL = 1
-AWG_SLOT = 2
+AWG_SLOT = 8
 AWG_CHANNEL = 4
 
 AWG_DELAY = 0e-9

@@ -22,12 +22,14 @@ _pointsPerCycle = 0
 timeStamps = []
 _SAMPLE_RATE = 500E+06
 
+
 def timebase(start, stop, sample_rate):
     start_sample = int(start * sample_rate)
     stop_sample = int (stop * sample_rate)
     timebase = np.arange(start_sample, stop_sample)
     timebase = timebase / sample_rate
     return(timebase)
+
 
 def open(chassis, slot, channel, captureTime):
     log.info("Configuring Digitizer...")
@@ -47,6 +49,7 @@ def open(chassis, slot, channel, captureTime):
         log.info("Error Configuring channel")
     return (__dig)
 
+
 def digitize(trigger_delay, number_of_pulses = 1):
     trigger_delay = trigger_delay * _SAMPLE_RATE # expressed in samples
     trigger_delay = int(np.round(trigger_delay))
@@ -57,14 +60,19 @@ def digitize(trigger_delay, number_of_pulses = 1):
     if error < 0:
         log.info("Error Starting Digitizer")
     
-def get_data():
+
+def get_data_raw():
     TIMEOUT = 10000
-    LSB = 1/ 2**14
     dataRead = __dig.DAQread(_channel, _pointsPerCycle, TIMEOUT)
     if len(dataRead) != _pointsPerCycle:
         log.warn("Attempted to Read {} samples, actually read {} samples".format(_pointsPerCycle, len(dataRead)))
-    return(dataRead * LSB)
+    return(dataRead)
     
+def get_data():
+    LSB = 1/ 2**14
+    return(get_data_raw() * LSB)
+    
+
 def close():
     __dig.close()
 

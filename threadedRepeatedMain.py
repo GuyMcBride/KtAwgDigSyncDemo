@@ -20,9 +20,8 @@ import queue
 import threading
 
 
-CHASSIS = 0
 DIGITIZER_SLOT = 6
-DIGITIZER_CHANNEL = 2
+DIGITIZER_CHANNELS = [2,3]
 AWG_SLOT = 8
 AWG_CHANNEL = 4
 
@@ -33,7 +32,7 @@ PULSE_WIDTH = 5E-06
 CAPTURE_WIDTH = 200E-06
 CARRIER_FREQUENCIES = [10E+06, 20E+6]
 
-PRI = 1000.0E-6
+PRI = 500.0E-6
 NUMBER_OF_PULSES = 1000
 
 PULSES_TO_PLOT = 0
@@ -81,9 +80,9 @@ def getData(pipe, event, pulses):
         pipe.put(samples)
     end_time = time.time()
     elapsed = end_time - start_time
-    samplesProcessed = (pulses * dig._pointsPerCycle) / 1e6
-    logging.info ("getData processed %d Msamples in %f s", samplesProcessed, elapsed)
-    logging.info("Data rate: {}Msa/s in lumps of {} samples".format((pulses * dig._pointsPerCycle) / elapsed / 1e6, dig._pointsPerCycle))
+    samplesProcessed = (pulses * len(samples[0]) * len(samples))
+    logging.info ("getData processed %d Msamples in %f s", samplesProcessed / 1e6, elapsed)
+    logging.info("getData rate: {}Msa/s in lumps of {} samples".format(samplesProcessed / elapsed / 1e6, dig._pointsPerCycle))
 
 
 def processData(pipe, event, pulses):
@@ -92,12 +91,12 @@ def processData(pipe, event, pulses):
     start_time = time.time()
     for pulse in range(pulses):
         samples = pipe.get()
-        time.sleep(0.01)
+#        time.sleep(0.001)
     end_time = time.time()
     elapsed = end_time - start_time
-    samplesProcessed = (pulses * dig._pointsPerCycle) / 1e6
-    logging.info ("processData processed %d Msamples in %f s", samplesProcessed, elapsed)
-    logging.info("processData rate: {}Msa/s in lumps of {} samples".format((pulses * dig._pointsPerCycle) / elapsed / 1e6, dig._pointsPerCycle))
+    samplesProcessed = (pulses * len(samples[0]) * len(samples))
+    logging.info ("processData processed %d Msamples in %f s", samplesProcessed / 1e6, elapsed)
+    logging.info("processData rate: {}Msa/s in lumps of {} samples".format(samplesProcessed / elapsed / 1e6, dig._pointsPerCycle))
 
 
 if (__name__ == '__main__'):
@@ -111,8 +110,8 @@ if (__name__ == '__main__'):
         wave = np.concatenate([wave, np.zeros(100)])
         waves.append(wave)
 
-    awg_h = awg.open(CHASSIS, AWG_SLOT, AWG_CHANNEL)
-    dig_h = dig.open(CHASSIS, DIGITIZER_SLOT, DIGITIZER_CHANNEL, CAPTURE_WIDTH)
+    awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
+    dig_h = dig.open(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
 
 #    awg.loadWaveform(waves[0], AWG_DELAYS[0])
     awg.loadWaveforms(waves, AWG_DELAYS)

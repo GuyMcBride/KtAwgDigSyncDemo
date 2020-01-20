@@ -26,8 +26,27 @@ SINGLE_CYCLE = 1
 INFINITE_CYCLES = 0
 WAVE_PRESCALER = 0
 
-def open(chassis, slot, channel):
+
+class AwgError(Exception):
+    """Basic exception for errors raised by Digitizer"""
+    _error = None
+    _message = None
+    def __init__(self, error, msg=None):
+        if msg is None:
+            msg = "An error occured with Awg: {}".format(key.SD_Error.getErrorMessage(error))
+        super(AwgError, self).__init__(msg)
+        self._error = error
+    @property
+    def error_message(self):
+        return key.SD_Error.getErrorMessage(self._error)
+
+
+def open(slot, channel):
     global _channel
+        # Discover the chassis number
+    chassis = key.SD_Module.getChassisByIndex(1)
+    if chassis < 0:
+        raise DigitizerError(chassis)
     log.info("Configuring AWG in slot {}...".format(slot))
     _channel = channel
     error = __awg.openWithSlotCompatibility('', chassis, slot, key.SD_Compatibility.KEYSIGHT)

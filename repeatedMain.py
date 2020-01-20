@@ -15,9 +15,8 @@ import digitizer as dig
 import hvi
 import time
 
-CHASSIS = 0
 DIGITIZER_SLOT = 6
-DIGITIZER_CHANNEL = 2
+DIGITIZER_CHANNELS = [2]
 AWG_SLOT = 8
 AWG_CHANNEL = 4
 
@@ -31,7 +30,7 @@ CARRIER_FREQUENCIES = [10E+06, 20E+6]
 PRI = 1000.0E-6
 NUMBER_OF_PULSES = 1000
 
-PULSES_TO_PLOT = 0
+PULSES_TO_PLOT = 2
 
 log = logging.getLogger('Main')
 
@@ -77,8 +76,8 @@ if (__name__ == '__main__'):
         wave = np.concatenate([wave, np.zeros(100)])
         waves.append(wave)
 
-    awg_h = awg.open(CHASSIS, AWG_SLOT, AWG_CHANNEL)
-    dig_h = dig.open(CHASSIS, DIGITIZER_SLOT, DIGITIZER_CHANNEL, CAPTURE_WIDTH)
+    awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
+    dig_h = dig.open(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
 
 #    awg.loadWaveform(waves[0], AWG_DELAYS[0])
     awg.loadWaveforms(waves, AWG_DELAYS)
@@ -98,11 +97,11 @@ if (__name__ == '__main__'):
     start_time = time.time()
     for ii in range(NUMBER_OF_PULSES):
         samples = dig.get_data()
-        if len(samples) == 0:
+        if len(samples[0]) == 0:
             log.error("Reading appears to have timed out after {} pulses".format(ii))
             break
         if ii < PULSES_TO_PLOT:  # do not plot too many waves
-            plt.plot(dig.timeStamps / 1e-06, samples)
+            plt.plot(dig.timeStamps / 1e-06, samples[0])
     elapsed_time = time.time() - start_time
     log.info("Read {} Msamples in {}s".format((NUMBER_OF_PULSES * dig._pointsPerCycle) / 1e6, elapsed_time))
     log.info("Data rate: {}Msa/s in lumps of {} samples".format((NUMBER_OF_PULSES * dig._pointsPerCycle) / elapsed_time / 1e6, dig._pointsPerCycle))

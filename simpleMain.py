@@ -14,9 +14,8 @@ import AWG as awg
 import digitizer as dig
 import hvi
 
-CHASSIS = 0
 DIGITIZER_SLOT = 6
-DIGITIZER_CHANNEL = 1
+DIGITIZER_CHANNELS = [1]
 AWG_SLOT = 8
 AWG_CHANNEL = 4
 
@@ -64,8 +63,8 @@ if (__name__ == '__main__'):
     wave = np.sin(hertz_to_rad(CARRIER_FREQUENCY) * t)
     wave = np.concatenate([wave, np.zeros(100)])
     
-    awg_h = awg.open(CHASSIS, AWG_SLOT, AWG_CHANNEL)
-    dig_h = dig.open(CHASSIS, DIGITIZER_SLOT, DIGITIZER_CHANNEL, CAPTURE_WIDTH)
+    awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
+    dig_h = dig.open(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
     
     awg.loadWaveform(wave, AWG_DELAY)
     dig.digitize(DIGITIZER_DELAY)
@@ -77,7 +76,7 @@ if (__name__ == '__main__'):
     hvi.start()
 
     samples = dig.get_data()
-    plt.plot(dig.timeStamps / 1e-06, samples)
+    plt.plot(dig.timeStamps / 1e-06, samples[0])
     plt.xlabel("us")
     
     hvi.close()

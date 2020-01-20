@@ -11,7 +11,7 @@ import numpy as np
 import logging.config
 import matplotlib.pyplot as plt
 import AWG as awg
-import digitizer as dig
+import digitizer
 import hvi
 import time
 
@@ -82,7 +82,7 @@ def getData(pipe, event, pulses):
     elapsed = end_time - start_time
     samplesProcessed = (pulses * len(samples[0]) * len(samples))
     logging.info ("getData processed %d Msamples in %f s", samplesProcessed / 1e6, elapsed)
-    logging.info("getData rate: {}Msa/s in lumps of {} samples".format(samplesProcessed / elapsed / 1e6, dig._pointsPerCycle))
+    logging.info("getData rate: {}Msa/s in lumps of {} samples".format(samplesProcessed / elapsed / 1e6, dig.pointsPerCycle))
 
 
 def processData(pipe, event, pulses):
@@ -96,7 +96,7 @@ def processData(pipe, event, pulses):
     elapsed = end_time - start_time
     samplesProcessed = (pulses * len(samples[0]) * len(samples))
     logging.info ("processData processed %d Msamples in %f s", samplesProcessed / 1e6, elapsed)
-    logging.info("processData rate: {}Msa/s in lumps of {} samples".format(samplesProcessed / elapsed / 1e6, dig._pointsPerCycle))
+    logging.info("processData rate: {}Msa/s in lumps of {} samples".format(samplesProcessed / elapsed / 1e6, dig.pointsPerCycle))
 
 
 if (__name__ == '__main__'):
@@ -111,14 +111,14 @@ if (__name__ == '__main__'):
         waves.append(wave)
 
     awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
-    dig_h = dig.open(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
+    dig = digitizer.Digitizer(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
 
 #    awg.loadWaveform(waves[0], AWG_DELAYS[0])
     awg.loadWaveforms(waves, AWG_DELAYS)
     dig.digitize(DIGITIZER_DELAY, NUMBER_OF_PULSES)
 
     hvi_path = os.getcwd() + '\\SyncStartRepeated.hvi'
-    hvi_mapping = {'AWG': awg_h, 'DIG': dig_h}
+    hvi_mapping = {'AWG': awg_h, 'DIG': dig.handle}
     hvi.init(hvi_path, hvi_mapping)
 
     hvi.start(NUMBER_OF_PULSES, PRI)
@@ -138,5 +138,4 @@ if (__name__ == '__main__'):
         event.set()
         logging.info("main thread event: {}".format(event.is_set()))
     hvi.close()
-    dig.close()
     awg.close()

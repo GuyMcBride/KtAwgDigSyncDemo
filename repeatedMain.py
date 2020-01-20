@@ -11,7 +11,7 @@ import numpy as np
 import logging.config
 import matplotlib.pyplot as plt
 import AWG as awg
-import digitizer as dig
+import digitizer
 import hvi
 import time
 
@@ -77,14 +77,14 @@ if (__name__ == '__main__'):
         waves.append(wave)
 
     awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
-    dig_h = dig.open(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
+    dig = digitizer.Digitizer(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
 
 #    awg.loadWaveform(waves[0], AWG_DELAYS[0])
     awg.loadWaveforms(waves, AWG_DELAYS)
     dig.digitize(DIGITIZER_DELAY, NUMBER_OF_PULSES)
 
     hvi_path = os.getcwd() + '\\SyncStartRepeated.hvi'
-    hvi_mapping = {'AWG': awg_h, 'DIG': dig_h}
+    hvi_mapping = {'AWG': awg_h, 'DIG': dig.handle}
     hvi.init(hvi_path, hvi_mapping)
 
     hvi.start(NUMBER_OF_PULSES, PRI)
@@ -103,8 +103,7 @@ if (__name__ == '__main__'):
         if ii < PULSES_TO_PLOT:  # do not plot too many waves
             plt.plot(dig.timeStamps / 1e-06, samples[0])
     elapsed_time = time.time() - start_time
-    log.info("Read {} Msamples in {}s".format((NUMBER_OF_PULSES * dig._pointsPerCycle) / 1e6, elapsed_time))
-    log.info("Data rate: {}Msa/s in lumps of {} samples".format((NUMBER_OF_PULSES * dig._pointsPerCycle) / elapsed_time / 1e6, dig._pointsPerCycle))
+    log.info("Read {} Msamples in {}s".format((NUMBER_OF_PULSES * dig.pointsPerCycle) / 1e6, elapsed_time))
+    log.info("Data rate: {}Msa/s in lumps of {} samples".format((NUMBER_OF_PULSES * dig.pointsPerCycle) / elapsed_time / 1e6, dig.pointsPerCycle))
     hvi.close()
-    dig.close()
     awg.close()

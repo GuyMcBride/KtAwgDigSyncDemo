@@ -11,7 +11,7 @@ import numpy as np
 import logging.config
 import matplotlib.pyplot as plt
 import AWG as awg
-import digitizer as dig
+import digitizer
 import hvi
 
 DIGITIZER_SLOT = 6
@@ -64,13 +64,13 @@ if (__name__ == '__main__'):
     wave = np.concatenate([wave, np.zeros(100)])
     
     awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
-    dig_h = dig.open(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
+    dig = digitizer.Digitizer(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
     
     awg.loadWaveform(wave, AWG_DELAY)
     dig.digitize(DIGITIZER_DELAY)
     
     hvi_path = os.getcwd() + '\\SyncStart.hvi'
-    hvi_mapping = {'AWG': awg_h, 'DIG': dig_h}
+    hvi_mapping = {'AWG': awg_h, 'DIG': dig.handle}
     hvi.init(hvi_path, hvi_mapping)
 
     hvi.start()
@@ -80,6 +80,5 @@ if (__name__ == '__main__'):
     plt.xlabel("us")
     
     hvi.close()
-    dig.close()
     awg.close()
     

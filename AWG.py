@@ -46,7 +46,7 @@ def open(slot, channel):
         # Discover the chassis number
     chassis = key.SD_Module.getChassisByIndex(1)
     if chassis < 0:
-        raise DigitizerError(chassis)
+        raise AwgError(chassis)
     log.info("Configuring AWG in slot {}...".format(slot))
     _channel = channel
     error = __awg.openWithSlotCompatibility('', chassis, slot, key.SD_Compatibility.KEYSIGHT)

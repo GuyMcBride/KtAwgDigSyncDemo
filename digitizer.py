@@ -46,11 +46,16 @@ class Digitizer:
     def handle(self):
         return self._handle
 
+    @property
+    def slot(self):
+        return self._slot
+
     def __init__(self, slot, channels, captureTime):
         log.info("Configuring Digitizer...")
         self._handle = key.SD_AIN()
         self.sampleRate = 500E+06
         self.channels = channels
+        self._slot = slot
         self.timeStamps = self.timebase(0, captureTime, self.sampleRate)
         self.pointsPerCycle = len(self.timeStamps)
 
@@ -74,6 +79,7 @@ class Digitizer:
                 log.info("Error Configuring channel")
 
     def digitize(self, trigger_delay, number_of_pulses=1):
+        log.info("Starting Digitizer: Slot-{}...".format(self._slot))
         trigger_delay = trigger_delay * self.sampleRate  # expressed in samples
         trigger_delay = int(np.round(trigger_delay))
         for channel in self.channels:
@@ -83,6 +89,7 @@ class Digitizer:
                 number_of_pulses,
                 trigger_delay,
                 key.SD_TriggerModes.SWHVITRIG)
+#                key.SD_TriggerModes.AUTOTRIG)
             if error < 0:
                 log.info("Error Configuring Acquisition")
             error = self._handle.DAQstart(channel)
@@ -99,7 +106,7 @@ class Digitizer:
                 TIMEOUT)
             if len(dataRead) != self.pointsPerCycle:
                 log.warning(
-                    "Attempted to Read {} samples, actually read {} samples".format(self.pointsPerCycle, len(dataRead)))
+                    "Slot:{} Attempted to Read {} samples, actually read {} samples".format(self._slot, self.pointsPerCycle, len(dataRead)))
             channelData.append(dataRead)
         return(channelData)
 
@@ -109,6 +116,10 @@ class Digitizer:
         for channelData in range(len(samples)):
             samples[channelData] = samples[channelData] * LSB
         return(samples)
+
+    def readRegister(self, regNumber):
+        retVal = self._handle.readRegisterByNumber(regNumber)
+        return(retVal[1])
 
     def __del__(self):
         self._handle.close()

@@ -20,8 +20,8 @@ import queue
 import threading
 
 
-DIGITIZER_SLOT = 6
-DIGITIZER_CHANNELS = [2,3]
+DIGITIZER_SLOTS = [7]
+DIGITIZER_CHANNELS = [2, 3]
 AWG_SLOT = 8
 AWG_CHANNEL = 4
 
@@ -33,7 +33,7 @@ CAPTURE_WIDTH = 200E-06
 CARRIER_FREQUENCIES = [10E+06, 20E+6]
 
 PRI = 500.0E-6
-NUMBER_OF_PULSES = 1000
+NUMBER_OF_PULSES = 2
 
 PULSES_TO_PLOT = 0
 
@@ -70,7 +70,7 @@ def timebase(start, stop, sample_rate):
     return(timebase)
 
 
-def getData(pipe, event, pulses):
+def getData(dig, pipe, event, pulses):
     """Get Data from digitizer."""
     logging.info("Started getData")
     start_time = time.time()
@@ -81,8 +81,12 @@ def getData(pipe, event, pulses):
     end_time = time.time()
     elapsed = end_time - start_time
     samplesProcessed = (pulses * len(samples[0]) * len(samples))
-    logging.info ("getData processed %d Msamples in %f s", samplesProcessed / 1e6, elapsed)
-    logging.info("getData rate: {}Msa/s in lumps of {} samples".format(samplesProcessed / elapsed / 1e6, dig.pointsPerCycle))
+    logging.info("getData processed %d Msamples in %.3f s",
+                 samplesProcessed / 1e6,
+                 elapsed)
+    logging.info("getData rate: %.3f Msa/s in lumps of %d samples",
+                 samplesProcessed / elapsed / 1e6,
+                 dig.pointsPerCycle)
 
 
 def processData(pipe, event, pulses):
@@ -95,8 +99,12 @@ def processData(pipe, event, pulses):
     end_time = time.time()
     elapsed = end_time - start_time
     samplesProcessed = (pulses * len(samples[0]) * len(samples))
-    logging.info ("processData processed %d Msamples in %f s", samplesProcessed / 1e6, elapsed)
-    logging.info("processData rate: {}Msa/s in lumps of {} samples".format(samplesProcessed / elapsed / 1e6, dig.pointsPerCycle))
+    logging.info("processData processed %d Msamples in %.3f s",
+                 samplesProcessed / 1e6,
+                 elapsed)
+    logging.info("processData rate: %.3f Msa/s in lumps of %d samples",
+                 samplesProcessed / elapsed / 1e6,
+                 dig.pointsPerCycle)
 
 
 if (__name__ == '__main__'):
@@ -111,14 +119,23 @@ if (__name__ == '__main__'):
         waves.append(wave)
 
     awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
-    dig = digitizer.Digitizer(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
+    digitizers = []
+    for dig in range(len(DIGITIZER_SLOTS)):
+        digitizers.append(digitizer.Digitizer(
+            DIGITIZER_SLOTS[dig],
+            DIGITIZER_CHANNELS,
+            CAPTURE_WIDTH))
+    for dig in digitizers:
+        dig.digitize(DIGITIZER_DELAY, NUMBER_OF_PULSES)
 
 #    awg.loadWaveform(waves[0], AWG_DELAYS[0])
     awg.loadWaveforms(waves, AWG_DELAYS)
-    dig.digitize(DIGITIZER_DELAY, NUMBER_OF_PULSES)
 
-    hvi_path = os.getcwd() + '\\SyncStartRepeated.hvi'
-    hvi_mapping = {'AWG': awg_h, 'DIG': dig.handle}
+    hvi_mapping = {'AWG0': awg_h}
+    for ii in range(len(digitizers)):
+        hvi_mapping['DIG{}'.format(ii)] = digitizers[ii].handle
+    hvi_file = '\\SyncStartRepeated_A1_D{}.hvi'.format(len(digitizers))
+    hvi_path = os.getcwd() + hvi_file
     hvi.init(hvi_path, hvi_mapping)
 
     hvi.start(NUMBER_OF_PULSES, PRI)
@@ -129,13 +146,19 @@ if (__name__ == '__main__'):
 
     pipeline = queue.Queue(maxsize=0)
     event = threading.Event()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        executor.submit(getData, pipeline, event, NUMBER_OF_PULSES)
-        executor.submit(processData, pipeline, event, NUMBER_OF_PULSES)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        for dig in digitizers:
+            executor.submit(getData,
+                            dig,
+                            pipeline,
+                            event,
+                            NUMBER_OF_PULSES)
+        executor.submit(processData,
+                        pipeline,
+                        event,
+                        NUMBER_OF_PULSES)
 
-        time.sleep(10)
-        logging.info("Main: about to set event")
-        event.set()
-        logging.info("main thread event: {}".format(event.is_set()))
+    logging.info("AWG0 loop counter: {}".format(awg.readRegister(15)))
+    logging.info("DIG0 loop counter: {}".format(digitizers[ii].readRegister(15)))
     hvi.close()
     awg.close()

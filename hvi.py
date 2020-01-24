@@ -58,9 +58,9 @@ def init(hviFileName, mapping):
         __log.error("Opening HVI - {}: {}".format(hviID, key.SD_Error.getErrorMessage(hviID)))
         raise HviError(hviID, "Opening HVI - {}: {}".format(hviID, key.SD_Error.getErrorMessage(hviID)))
         
-    error  = __hvi.releaseHW()
-    if (error < 0):
-        __log.error("Releasing HW - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+#    error  = __hvi.releaseHW()
+#    if (error < 0):
+#        __log.error("Releasing HW - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
 
     for (module_name, module_id) in mapping.items():
         __log.info("Assigning {} to {} in slot {}".format(module_name, module_id.getProductName(), module_id.getSlot()))
@@ -81,36 +81,22 @@ def init(hviFileName, mapping):
     if error == -8069:
         __log.error("Assigning HVI - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
 #        raise HviError(error)
-    __compile_download()
+#    __compile_download()
             
 def start(number_pulses = 1, pri = 0):
-    __log.info("Starting HVI...")
-    # There is 140ns of intrinsic 'gap' in the HVI loop.
-    gap = pri - 140e-09
+    # There is 280ns of intrinsic 'gap' in the HVI loop.
+    gap = pri - 280e-09
     if gap < 0: gap = 0
-    error = __hvi.writeDoubleConstantWithUserName('AWG', 'GapTime', gap, 's')
+    error = __hvi.writeDoubleConstantWithUserName('AWG0', 'GapTime', gap, 's')
     if (error < 0):
-        __log.warning("Writing AWG gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+        __log.warning("Writing AWG0 gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
 
-    error = __hvi.writeDoubleConstantWithUserName('DIG', 'GapTime', gap, 's')
+    error = __hvi.writeIntegerConstantWithUserName('AWG0', 'NumberOfPulses', number_pulses)
     if (error < 0):
-        __log.warning("Writing DIG gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
-
-    error = __hvi.writeIntegerConstantWithUserName('AWG', 'NumberOfPulses', number_pulses)
-    if (error < 0):
-        __log.warning("Writing AWG numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
-
-    error = __hvi.writeIntegerConstantWithUserName('DIG', 'NumberOfPulses', number_pulses)
-    if (error < 0):
-        __log.warning("Writing DIG numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
-    
-    [error, digNumPulses] = __hvi.readIntegerConstantWithUserName('DIG', 'NumberOfPulses')
-    if (error < 0):
-        __log.warning("Reading DIG numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
-    else:
-        __log.info("DIG numberOfPulses Register = {}".format(digNumPulses))
+        __log.warning("Writing AWG0 numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
 
     __compile_download()    # This necessary when Constants are changed
+    __log.info("Starting HVI...")
     error = __hvi.start()
     if (error < 0):
         __log.error("Starting HVI- {}: {}".format(error, key.SD_Error.getErrorMessage(error)))

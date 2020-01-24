@@ -107,6 +107,10 @@ def loadWaveforms(waveforms, start_delays):
         loadWaveform(waveforms[ii], start_delays[ii], ii + 1)
     return 1
 
+def readRegister(n):
+    retVal = __awg.readRegisterByNumber(n)
+    return(retVal[1])
+
 def close():
     log.info("Stopping AWG...")
     error = __awg.AWGstop(_channel)

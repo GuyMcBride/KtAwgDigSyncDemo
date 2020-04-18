@@ -89,11 +89,11 @@ def start(number_pulses = 1, pri = 0):
     if gap < 0: gap = 0
     error = __hvi.writeDoubleConstantWithUserName('AWG0', 'GapTime', gap, 's')
     if (error < 0):
-        __log.warning("Writing AWG0 gapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+        __log.warning("Writing AWG0 GapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
 
     error = __hvi.writeIntegerConstantWithUserName('AWG0', 'NumberOfPulses', number_pulses)
     if (error < 0):
-        __log.warning("Writing AWG0 numberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+        __log.warning("Writing AWG0 NumberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
 
     __compile_download()    # This necessary when Constants are changed
     __log.info("Starting HVI...")

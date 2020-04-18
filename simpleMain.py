@@ -14,10 +14,10 @@ import AWG as awg
 import digitizer
 import hvi
 
-DIGITIZER_SLOT = 6
+DIGITIZER_SLOT = 7
 DIGITIZER_CHANNELS = [1]
-AWG_SLOT = 8
-AWG_CHANNEL = 4
+AWG_SLOT = 2
+AWG_CHANNEL = 1
 
 AWG_DELAY = 0e-9
 DIGITIZER_DELAY = 20e-9
@@ -70,7 +70,7 @@ if (__name__ == '__main__'):
     dig.digitize(DIGITIZER_DELAY)
     
     hvi_path = os.getcwd() + '\\SyncStart.hvi'
-    hvi_mapping = {'AWG': awg_h, 'DIG': dig.handle}
+    hvi_mapping = {'AWG0': awg_h, 'DIG': dig.handle}
     hvi.init(hvi_path, hvi_mapping)
 
     hvi.start()

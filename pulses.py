@@ -15,13 +15,6 @@ from scipy import signal
 from scipy import io as sio
 from collections import namedtuple as namedtuple
 
-SAMPLE_RATE = 1e+09
-SYSTEM_BANDWIDTH = 2.5E+06
-
-WIDTH = 1e-6
-PRI = 10e-6
-PULSE_TRAIN = [0, 1, 1, 1, 0, 0, 1, 1, 0]   # Relative to time = 0. We need some lead-in time for the pulse shaping
-
 Waveform = namedtuple('Waveform', 'wave, timebase')
 
 
@@ -56,12 +49,29 @@ def createIdealPulseTrain(sampleRate, pulseWidth, repRate, pulseTrain):
             wave[start : end] = 1.0
     return(wave)
 
+
 def createPulseTrain(sampleRate, pulseWidth, repRate, pulseTrain, bandwidth):
     wave = createIdealPulseTrain(sampleRate, pulseWidth, repRate, pulseTrain)
     filteredWave = filterWave(sampleRate, bandwidth, wave)
     awgWave = signal.decimate(filteredWave, 10)
     t = timebase(0, len(awgWave) / sampleRate, sampleRate)
     return Waveform(awgWave, t)
+
+
+def createPulse(sampleRate, pulseWidth, bandwidth):
+    superRate = 20 * sampleRate
+    # We need to create a significantly larger wave than the pulse width to
+    # allow for the 'lead in' and 'lead out' of the 'shaped' waveform
+    leadIn = 0.45 / bandwidth
+    leadInSamples = int(leadIn * superRate)
+    wave = np.concatenate([np.zeros(leadInSamples), 
+                           np.ones(int(pulseWidth * superRate)), 
+                           np.zeros(leadInSamples)])
+    filteredWave = filterWave(sampleRate, bandwidth , wave)
+    awgWave = signal.decimate(filteredWave, 10)
+    t = np.arange(0, len(filteredWave))
+    t = t / sampleRate
+    return Waveform(filteredWave, t)
 
 
 def createTone(sampleRate, frequency, phase, timebase):
@@ -95,10 +105,23 @@ def createMat(sampleRate, filename, wave):
 ######################################################
 
 if (__name__ == '__main__'):
-    waveform = createPulseTrain(SAMPLE_RATE, WIDTH, PRI, PULSE_TRAIN, SYSTEM_BANDWIDTH)
-    wave = waveform.wave
-    t = waveform.timebase
-    tone = createTone(SAMPLE_RATE, 10E6, 0, t)
-    rfWave = wave * tone
+    SAMPLE_RATE = 1e+09
+    SYSTEM_BANDWIDTH = 1E+06
+    
+    WIDTH = 10e-6
+    PRI = 100e-6
+    PULSE_TRAIN = [0, 1, 1, 1, 0, 0, 1, 1, 0]   # Relative to time = 0. We need some lead-in time for the pulse shaping
+    
+#    waveform = createPulseTrain(SAMPLE_RATE, WIDTH, PRI, PULSE_TRAIN, SYSTEM_BANDWIDTH)
+#    wave = waveform.wave
+#    t = waveform.timebase
+#    tone = createTone(SAMPLE_RATE, 10E6, 0, t)
+#    rfWave = wave * tone
+    
+    pulse = createPulse(SAMPLE_RATE, WIDTH, SYSTEM_BANDWIDTH)
+    
+    
 #    plt.plot(t, wave) 
-    plt.plot(t, rfWave)
+#    plt.plot(t, rfWave)
+
+    plt.plot(pulse.timebase, pulse.wave)

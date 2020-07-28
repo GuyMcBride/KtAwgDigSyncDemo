@@ -69,9 +69,9 @@ def createPulse(sampleRate, pulseWidth, bandwidth):
                            np.zeros(leadInSamples)])
     filteredWave = filterWave(sampleRate, bandwidth , wave)
     awgWave = signal.decimate(filteredWave, 10)
-    t = np.arange(0, len(filteredWave))
+    t = np.arange(0, len(awgWave))
     t = t / sampleRate
-    return Waveform(filteredWave, t)
+    return Waveform(awgWave, t)
 
 
 def createTone(sampleRate, frequency, phase, timebase):
@@ -108,7 +108,7 @@ if (__name__ == '__main__'):
     SAMPLE_RATE = 1e+09
     SYSTEM_BANDWIDTH = 1E+06
     
-    WIDTH = 10e-6
+    WIDTH = 1e-6
     PRI = 100e-6
     PULSE_TRAIN = [0, 1, 1, 1, 0, 0, 1, 1, 0]   # Relative to time = 0. We need some lead-in time for the pulse shaping
     

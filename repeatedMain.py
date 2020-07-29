@@ -15,24 +15,6 @@ import digitizer
 import hvi
 import time
 
-DIGITIZER_SLOT = 7
-DIGITIZER_CHANNELS = [2]
-AWG_SLOT = 2
-AWG_CHANNEL = 1
-
-AWG_DELAYS = [100e-6, 0E-09]
-DIGITIZER_DELAY = 0e-9
-
-PULSE_WIDTH = 33E-09
-CAPTURE_WIDTH = 200E-06
-CARRIER_FREQUENCIES = [450E+06, 300E+6]
-CARRIER_AMPLITUDES = [1.0, 0.002]
-
-PRI = 100.0E-3
-NUMBER_OF_PULSES = 1000
-
-PULSES_TO_PLOT = 2
-
 log = logging.getLogger('Main')
 
 
@@ -67,6 +49,25 @@ def timebase(start, stop, sample_rate):
 
 
 if (__name__ == '__main__'):
+
+    DIGITIZER_SLOT = 7
+    DIGITIZER_CHANNELS = [1]
+    AWG_SLOT = 2
+    AWG_CHANNEL = 4
+    
+    AWG_DELAYS = [0e-6, 0E-09]
+    DIGITIZER_DELAY = 5000e-9
+    
+    PULSE_WIDTH =10E-06
+    CAPTURE_WIDTH = 500E-06
+    CARRIER_FREQUENCIES = [10E+06, 100E+6]
+    CARRIER_AMPLITUDES = [1.0, 0.5]
+    
+    PRI = 100.0E-3
+    NUMBER_OF_PULSES = 10
+    
+    PULSES_TO_PLOT = 2
+
     setup_logging()
 
     # Create a simple pulse of carrier
@@ -79,6 +80,7 @@ if (__name__ == '__main__'):
         waves.append(wave)
 
     awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
+    awg.configure("repeatedMain")
     dig = digitizer.Digitizer(DIGITIZER_SLOT, DIGITIZER_CHANNELS, CAPTURE_WIDTH)
 
 #    awg.loadWaveform(waves[0], AWG_DELAYS[0])

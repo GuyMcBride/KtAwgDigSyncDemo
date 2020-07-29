@@ -58,18 +58,39 @@ def open(slot, channel):
     __awg.AWGflush(_channel)
     if error < 0:
         log.info("Error Flushing AWG - {}".format(error))
-    error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_AWG)
-    if error < 0:
-        log.info("Error Setting Waveshape - {}".format(error))
-    error = __awg.channelAmplitude(_channel, 1.0)
-    if error < 0:
-        log.info("Error Setting Amplitude - {}".format(error))
-    log.info("Setting front panel trigger to Output...")
-    error = __awg.triggerIOconfig(key.SD_TriggerDirections.AOU_TRG_OUT)
-    if error < 0:
-        log.info("Error Setting Trigger to output - {}".format(error))
-    log.info("Finished setting up AWG in slot {}...".format(slot))
+        log.info("Finished setting up AWG in slot {}...".format(slot))
     return __awg
+
+def configure(experiment):
+    if "main" in experiment:
+        error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_AWG)
+        if error < 0:
+            log.warn("Error Setting Waveshape - {}".format(error))
+        log.info("Setting front panel trigger to Output...")
+        error = __awg.triggerIOconfig(key.SD_TriggerDirections.AOU_TRG_OUT)
+        if error < 0:
+            log.info("Error Setting Trigger to output - {}".format(error))
+        error = __awg.channelAmplitude(_channel, 1.0)
+        if error < 0:
+            log.warn("Error Setting Amplitude - {}".format(error))
+    elif ("TriggeredDoublePulser" in experiment):
+        log.info("Setting front panel trigger to Input...")
+        error = __awg.triggerIOconfig(key.SD_TriggerDirections.AOU_TRG_IN)
+        if error < 0:
+            log.warn(msg, args, kwargs)("Error Setting Trigger to input - {}".format(error))
+        error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_SINUSOIDAL)
+        if error < 0:
+            log.warn("Error Setting Waveshape - {}".format(error))
+        error = __awg.modulationAmplitudeConfig(_channel, key.SD_ModulationTypes.AOU_MOD_AM , 1.0)
+        if error < 0:
+            log.warn("Error  setting Amplitude Modulation - {}".format(error))
+        error = __awg.channelFrequency(_channel, 10.0E+06)
+        if error < 0:
+            log.warn("Error Setting default Frequency - {}".format(error))
+        error = __awg.channelAmplitude(_channel, 0.0)
+        if error < 0:
+            log.warn("Error Setting Amplitude - {}".format(error))
+       
     
 def loadWaveform(waveform, start_delay, waveId = 1):
     log.info("Loading waveform...")
@@ -111,6 +132,9 @@ def readRegister(n):
     retVal = __awg.readRegisterByNumber(n)
     return(retVal[1])
 
+def trigger():
+    __awg.AWGtrigger(_channel)
+    
 def close():
     log.info("Stopping AWG...")
     error = __awg.AWGstop(_channel)

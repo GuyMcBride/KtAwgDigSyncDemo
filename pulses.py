@@ -69,6 +69,7 @@ def createPulse(sampleRate, pulseWidth, bandwidth):
                            np.zeros(leadInSamples)])
     filteredWave = filterWave(sampleRate, bandwidth , wave)
     awgWave = signal.decimate(filteredWave, 10)
+    awgWave = np.pad(awgWave, (0, 32))
     t = np.arange(0, len(awgWave))
     t = t / sampleRate
     return Waveform(awgWave, t)
@@ -91,7 +92,7 @@ def createCsv(sampleRate, filename, wave):
 
 
 def createMat(sampleRate, filename, wave):
-    rpts = int(np.lcm(len(awgWave), 128)/len(awgWave))
+    rpts = int(np.lcm(len(wave), 128)/len(wave))
     XDelta = 1 / sampleRate
     
     matparams = {'InputZoom':[[1]], 

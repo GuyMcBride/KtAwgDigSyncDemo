@@ -58,10 +58,6 @@ def init(hviFileName, mapping):
         __log.error("Opening HVI - {}: {}".format(hviID, key.SD_Error.getErrorMessage(hviID)))
         raise HviError(hviID, "Opening HVI - {}: {}".format(hviID, key.SD_Error.getErrorMessage(hviID)))
         
-#    error  = __hvi.releaseHW()
-#    if (error < 0):
-#        __log.error("Releasing HW - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
-
     for (module_name, module_id) in mapping.items():
         __log.info("Assigning {} to {} in slot {}".format(module_name, module_id.getProductName(), module_id.getSlot()))
         error = __hvi.assignHardwareWithUserNameAndModuleID(module_name, module_id)
@@ -81,21 +77,21 @@ def init(hviFileName, mapping):
     if error == -8069:
         __log.error("Assigning HVI - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
 #        raise HviError(error)
-#    __compile_download()
+    __compile_download()
             
-def start(number_pulses = 1, pri = 0):
+def setupConstants(number_pulses = 1, pri = 0):
     # There is 280ns of intrinsic 'gap' in the HVI loop.
     gap = pri - 280e-09
     if gap < 0: gap = 0
     error = __hvi.writeDoubleConstantWithUserName('AWG0', 'GapTime', gap, 's')
     if (error < 0):
         __log.warning("Writing AWG0 GapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
-
     error = __hvi.writeIntegerConstantWithUserName('AWG0', 'NumberOfPulses', number_pulses)
     if (error < 0):
         __log.warning("Writing AWG0 NumberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
-
     __compile_download()    # This necessary when Constants are changed
+
+def start():
     __log.info("Starting HVI...")
     error = __hvi.start()
     if (error < 0):

@@ -9,12 +9,14 @@ import json
 import numpy as np
 import logging.config
 import matplotlib.pyplot as plt
-import AWG as awg
-import digitizer
-import hvi
 import time
-
+import AWG as awg
+import hvi
 import pulses
+
+log = logging.getLogger(__name__)
+
+
 
 SAMPLE_RATE = 1E+09
 
@@ -31,6 +33,30 @@ awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
 awg.configure("TriggeredDoublePulser")
 
 awg.loadWaveform(pulse.wave, 0)
-awg.trigger()
 
+hvi_path = os.getcwd() + '\\DoublePulse_clf.hvi'
+hvi_mapping = {'AWG0': awg_h}
+hvi.init(hvi_path, hvi_mapping)
+
+awg.writeRegister(0, 20E+06, 'Hz')
+freq1 = awg.readRegister(0)
+log.info("Frequency Pulse 1: {}".format(freq1))
+
+awg.writeRegister(3, 100E+06, 'Hz')
+freq2 = awg.readRegister(3)
+log.info("Frequency Pulse 2: {}".format(freq2))
+
+awg.writeRegister(15, 4)
+loops = awg.readRegister(15)
+log.info("Loops Required: {}".format(loops))
+
+hvi.start()
+
+#awg.trigger()
+
+time.sleep(1)
+loops = awg.readRegister(15)
+log.info("Loop Counter: {}".format(loops))
+
+hvi.close()
 awg.close()

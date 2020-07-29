@@ -132,6 +132,13 @@ def readRegister(n):
     retVal = __awg.readRegisterByNumber(n)
     return(retVal[1])
 
+def writeRegister(reg, setting, unit=''):
+    if unit == '':
+        __awg.writeRegisterByNumber(reg, setting)
+    else:
+        __awg.writeDoubleRegisterByNumber(reg, setting, unit)
+
+
 def trigger():
     __awg.AWGtrigger(_channel)
     

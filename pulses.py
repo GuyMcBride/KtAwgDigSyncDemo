@@ -69,6 +69,7 @@ def createPulse(sampleRate, pulseWidth, bandwidth):
                            np.zeros(leadInSamples)])
     filteredWave = filterWave(sampleRate, bandwidth , wave)
     awgWave = signal.decimate(filteredWave, 10)
+    # Clamp filter output to zero at the end of the pulse shaping
     awgWave = np.pad(awgWave, (0, 32))
     t = np.arange(0, len(awgWave))
     t = t / sampleRate

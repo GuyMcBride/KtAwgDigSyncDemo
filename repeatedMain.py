@@ -56,7 +56,7 @@ if (__name__ == '__main__'):
     AWG_CHANNEL = 4
     
     AWG_DELAYS = [0e-6, 0E-09]
-    DIGITIZER_DELAY = 5000e-9
+    DIGITIZER_DELAY = 500e-9
     
     PULSE_WIDTH =10E-06
     CAPTURE_WIDTH = 500E-06
@@ -91,7 +91,9 @@ if (__name__ == '__main__'):
     hvi_mapping = {'AWG0': awg_h, 'DIG': dig.handle}
     hvi.init(hvi_path, hvi_mapping)
 
-    hvi.start(NUMBER_OF_PULSES, PRI)
+    hvi.setupConstants(NUMBER_OF_PULSES, PRI)
+
+    hvi.start()
 
     # Allow the memory to partially fill.
     time.sleep(PRI * NUMBER_OF_PULSES / 100)

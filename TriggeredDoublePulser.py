@@ -55,7 +55,7 @@ awg.writeRegister(0, PULSE_FREQUENCIES[0], 'Hz')
 freq1 = awg.readRegister(0)
 log.info("Frequency Pulse 1: {}".format(freq1))
 
-awg.writeRegister(3, PULSE_FREQUENCIES[0], 'Hz')
+awg.writeRegister(3, PULSE_FREQUENCIES[1], 'Hz')
 freq2 = awg.readRegister(3)
 log.info("Frequency Pulse 2: {}".format(freq2))
 

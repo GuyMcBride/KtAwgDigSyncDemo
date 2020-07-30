@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import time
 import AWG as awg
 import hvi
-import pulses
+import pulses as pulseLab
 
 log = logging.getLogger(__name__)
 
@@ -26,19 +26,31 @@ LOOPS = 4
 PULSE_WIDTHS = [1E-06, 2E-06]
 PULSE_BANDWIDTHS = [1E+06, 10E+06]
 PULSE_FREQUENCIES = [20E+6, 100E+06]
-
-pulse = pulses.createPulse(SAMPLE_RATE, PULSE_WIDTHS[0], PULSE_BANDWIDTHS[0])
-plt.plot(pulse.timebase, pulse.wave)
+PULSE_AMPLITUDES = [1.0, 0.5]
 
 awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
 awg.configure("TriggeredDoublePulser")
-
-awg.loadWaveform(pulse.wave, 0)
 
 hvi_path = os.getcwd() + '\\DoublePulse_clf.hvi'
 hvi_mapping = {'AWG0': awg_h}
 hvi.init(hvi_path, hvi_mapping)
 
+pulses = []
+for ii in range(len(PULSE_WIDTHS)):
+    pulse = pulseLab.createPulse(SAMPLE_RATE, PULSE_WIDTHS[ii], PULSE_BANDWIDTHS[ii], 1)
+    pulses.append(pulse.wave)
+    plt.plot(pulse.timebase, pulse.wave)
+
+tic = time.perf_counter()
+scaledPulses = []
+for ii in range(len(pulses)):
+    scaledPulses.append(pulses[ii] * PULSE_AMPLITUDES[ii])
+awg.loadWaveforms(scaledPulses)
+
+toc = time.perf_counter()
+log.info("Calculating and downloading waveforms took: {}ms".format((toc - tic) / 1E-03))
+
+tic = time.perf_counter()
 awg.writeRegister(0, PULSE_FREQUENCIES[0], 'Hz')
 freq1 = awg.readRegister(0)
 log.info("Frequency Pulse 1: {}".format(freq1))
@@ -51,6 +63,8 @@ awg.writeRegister(15, LOOPS)
 loops = awg.readRegister(15)
 log.info("Loops Required: {}".format(loops))
 
+toc = time.perf_counter()
+log.info("Writing HVI registers took: {}ms".format((toc - tic) / 1E-03))
 hvi.start()
 
 #awg.trigger()

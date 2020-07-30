@@ -120,12 +120,15 @@ def loadWaveform(waveform, start_delay, waveId = 1):
     log.info("Finished Loading waveform")
     return 1
 
-def loadWaveforms(waveforms, start_delays):
+def loadWaveforms(waveforms, start_delays=[]):
     log.info("Loading waveforms...")
-    if len(waveforms) != len(start_delays):
+    if len(start_delays) > 0 & (len(waveforms) != len(start_delays)):
         log.error("There must be the same number of waveforms and start_delays")
     for ii in range(len(waveforms)):
-        loadWaveform(waveforms[ii], start_delays[ii], ii + 1)
+        if len(start_delays) > 0:
+            loadWaveform(waveforms[ii], start_delays[ii], ii + 1)
+        else:
+            loadWaveform(waveforms[ii], 0, ii + 1)
     return 1
 
 def readRegister(n):

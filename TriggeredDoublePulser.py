@@ -21,12 +21,12 @@ SAMPLE_RATE = 1E+09
 AWG_SLOT = 2
 AWG_CHANNEL = 1
 
-LOOPS = 4
+LOOPS = 8
 
 PULSE_WIDTHS = [1E-06, 2E-06]
 PULSE_BANDWIDTHS = [1E+06, 10E+06]
 PULSE_FREQUENCIES = [20E+6, 100E+06]
-PULSE_AMPLITUDES = [1.0, 0.5]
+PULSE_AMPLITUDES = [1.0, 1.0]
 
 awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
 awg.configure("TriggeredDoublePulser")
@@ -35,18 +35,13 @@ hvi_path = os.getcwd() + '\\DoublePulse_clf.hvi'
 hvi_mapping = {'AWG0': awg_h}
 hvi.init(hvi_path, hvi_mapping)
 
+tic = time.perf_counter()
 pulses = []
 for ii in range(len(PULSE_WIDTHS)):
     pulse = pulseLab.createPulse(SAMPLE_RATE, PULSE_WIDTHS[ii], PULSE_BANDWIDTHS[ii], 1)
     pulses.append(pulse.wave)
     plt.plot(pulse.timebase, pulse.wave)
-
-tic = time.perf_counter()
-scaledPulses = []
-for ii in range(len(pulses)):
-    scaledPulses.append(pulses[ii] * PULSE_AMPLITUDES[ii])
-awg.loadWaveforms(scaledPulses)
-
+awg.loadWaveforms(pulses)
 toc = time.perf_counter()
 log.info("Calculating and downloading waveforms took: {}ms".format((toc - tic) / 1E-03))
 
@@ -59,9 +54,14 @@ awg.writeRegister(3, PULSE_FREQUENCIES[1], 'Hz')
 freq2 = awg.readRegister(3)
 log.info("Frequency Pulse 2: {}".format(freq2))
 
-awg.writeRegister(15, LOOPS)
-loops = awg.readRegister(15)
-log.info("Loops Required: {}".format(loops))
+#awg.writeRegister(15, LOOPS)
+#loops = awg.readRegister(15)
+#log.info("Loops Required: {}".format(loops))
+constants = []
+constants.append(hvi.constant('AWG0', 'NumLoops', LOOPS, ''))
+constants.append(hvi.constant('AWG0', 'Amplitude1', PULSE_AMPLITUDES[0], 'V'))
+constants.append(hvi.constant('AWG0', 'Amplitude2', PULSE_AMPLITUDES[1], 'V'))
+hvi.setConstants(constants)
 
 toc = time.perf_counter()
 log.info("Writing HVI registers took: {}ms".format((toc - tic) / 1E-03))

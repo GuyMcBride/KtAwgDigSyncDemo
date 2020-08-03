@@ -25,7 +25,7 @@ LOOPS = 8
 
 PULSE_WIDTHS = [1E-06, 2E-06]
 PULSE_BANDWIDTHS = [1E+06, 10E+06]
-PULSE_FREQUENCIES = [20E+6, 100E+06]
+PULSE_FREQUENCIES = [100E+6, 20E+06]
 PULSE_AMPLITUDES = [1.0, 1.0]
 
 awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
@@ -46,13 +46,13 @@ toc = time.perf_counter()
 log.info("Calculating and downloading waveforms took: {}ms".format((toc - tic) / 1E-03))
 
 tic = time.perf_counter()
-awg.writeRegister(0, PULSE_FREQUENCIES[0], 'Hz')
-freq1 = awg.readRegister(0)
-log.info("Frequency Pulse 1: {}".format(freq1))
+#awg.writeRegister(0, PULSE_FREQUENCIES[0], 'Hz')
+#freq1 = awg.readRegister(0)
+#log.info("Frequency Pulse 1: {}".format(freq1))
 
-awg.writeRegister(3, PULSE_FREQUENCIES[1], 'Hz')
-freq2 = awg.readRegister(3)
-log.info("Frequency Pulse 2: {}".format(freq2))
+#awg.writeRegister(3, PULSE_FREQUENCIES[1], 'Hz')
+#freq2 = awg.readRegister(3)
+#log.info("Frequency Pulse 2: {}".format(freq2))
 
 #awg.writeRegister(15, LOOPS)
 #loops = awg.readRegister(15)
@@ -61,6 +61,8 @@ constants = []
 constants.append(hvi.constant('AWG0', 'NumLoops', LOOPS, ''))
 constants.append(hvi.constant('AWG0', 'Amplitude1', PULSE_AMPLITUDES[0], 'V'))
 constants.append(hvi.constant('AWG0', 'Amplitude2', PULSE_AMPLITUDES[1], 'V'))
+constants.append(hvi.constant('AWG0', 'Frequency1', PULSE_FREQUENCIES[0], 'Hz'))
+constants.append(hvi.constant('AWG0', 'Frequency2', PULSE_FREQUENCIES[1], 'Hz'))
 hvi.setConstants(constants)
 
 toc = time.perf_counter()

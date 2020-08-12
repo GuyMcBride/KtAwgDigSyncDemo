@@ -10,6 +10,7 @@ import time
 import random
 import numpy as np
 import logging
+import os
 #import matplotlib.pyplot as plt
 
 sys.path.append(r'C:\Program Files (x86)\Keysight\SD1\Libraries\Python')
@@ -155,6 +156,20 @@ def close():
         log.info("Putting AWG into HiZ failed! - {}".format(error))
     __awg.close()
     log.info("Finished stopping and closing AWG")
+    
+def loadFpgaImage(filename):
+    error = __awg.FPGAload(os.getcwd() + '\\' + filename)
+    if error < 0:
+       log.error('Loading FPGA bitfile: {} {}'.format(error, key.SD_Error.getErrorMessage(error)))
+
+def writeFpgaRegister(port, address, value):
+    buf = []
+    buf.append(value)
+    error = __awg.FPGAwritePCport(port, buf, address, key.SD_AddressingMode.FIXED, key.SD_AccessMode.NONDMA)
+    if error < 0:
+        log.error('WriteRegister: {} {}'.format(error, key.SD_Error.getErrorMessage(error)))
+        log.error('Address: {}'.format(address))
+        log.error('Buffer [{}]'.format(buf))
 
 if (__name__ == '__main__'):
 

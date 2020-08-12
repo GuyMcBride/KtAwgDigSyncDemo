@@ -8,8 +8,12 @@ Created on Thu May 23 09:46:33 2019
 import logging
 import sys
 import time
+from collections import namedtuple as namedtuple
+
 sys.path.append('C:\Program Files (x86)\Keysight\SD1\Libraries\Python')
 import keysightSD1 as key
+
+constant = namedtuple('constant', 'module, name, value, unit')
 
 __log = logging.getLogger(__name__)
 
@@ -82,13 +86,28 @@ def init(hviFileName, mapping):
 def setupConstants(number_pulses = 1, pri = 0):
     # There is 280ns of intrinsic 'gap' in the HVI loop.
     gap = pri - 280e-09
+    constants = []
     if gap < 0: gap = 0
-    error = __hvi.writeDoubleConstantWithUserName('AWG0', 'GapTime', gap, 's')
+    constants.append(constant('AWG0', 'GapTime', gap, 's'))
+    constants.append(constant('AWG0', 'NumberOfPulses', number_pulses, ''))
+    setConstants(constants)
+   
+def setConstants(constants):
+    for constant in constants:
+        if constant.unit == '':
+            error = __hvi.writeIntegerConstantWithUserName(constant.module, 
+                                                           constant.name, 
+                                                           constant.value)
+        else:
+            error = __hvi.writeDoubleConstantWithUserName(constant.module, 
+                                                          constant.name, 
+                                                          constant.value, 
+                                                          constant.unit)
     if (error < 0):
-        __log.warning("Writing AWG0 GapTime - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
-    error = __hvi.writeIntegerConstantWithUserName('AWG0', 'NumberOfPulses', number_pulses)
-    if (error < 0):
-        __log.warning("Writing AWG0 NumberOfPulses - {}: {}".format(error, key.SD_Error.getErrorMessage(error)))
+            __log.warning("Writing {} {}- {}: {}".format(constant.module, 
+                                                         constant.name,
+                                                         error, 
+                                                         key.SD_Error.getErrorMessage(error)))
     __compile_download()    # This necessary when Constants are changed
 
 def start():

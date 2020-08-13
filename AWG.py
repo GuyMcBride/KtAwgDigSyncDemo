@@ -62,7 +62,7 @@ def open(slot, channel):
         log.info("Finished setting up AWG in slot {}...".format(slot))
     return __awg
 
-def configure(experiment):
+def configure(experiment, refChannel = 0):
     if "main" in experiment:
         error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_AWG)
         if error < 0:
@@ -91,6 +91,26 @@ def configure(experiment):
         error = __awg.channelAmplitude(_channel, 0.5)
         if error < 0:
             log.warn("Error Setting Amplitude - {}".format(error))
+    elif ("MultiLo" in experiment):
+        log.info("Setting front panel trigger to Input...")
+        error = __awg.triggerIOconfig(key.SD_TriggerDirections.AOU_TRG_IN)
+        if error < 0:
+            log.warn("Error Setting Trigger to input - {}".format(error))
+        error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_TRIANGULAR)
+        if error < 0:
+            log.warn("Error Setting Waveshape - {}".format(error))
+        error = __awg.modulationAmplitudeConfig(_channel, key.SD_ModulationTypes.AOU_MOD_AM , 1.0)
+        if error < 0:
+            log.warn("Error  setting Amplitude Modulation - {}".format(error))
+        error = __awg.channelAmplitude(_channel, 0.0)
+        if error < 0:
+            log.warn("Error Setting Amplitude - {}".format(error))
+        error = __awg.channelWaveShape(refChannel, key.SD_Waveshapes.AOU_TRIANGULAR)
+        if error < 0:
+            log.warn("Error Setting Ref Channel Waveshape - {}".format(error))
+        error = __awg.channelAmplitude(refChannel, 1.0)
+        if error < 0:
+            log.warn("Error Setting Reference Channel Amplitude - {}".format(error))
        
     
 def loadWaveform(waveform, start_delay, waveId = 1):
@@ -146,14 +166,15 @@ def writeRegister(reg, setting, unit=''):
 def trigger():
     __awg.AWGtrigger(_channel)
     
-def close():
+def close(turnOff=True):
     log.info("Stopping AWG...")
     error = __awg.AWGstop(_channel)
     if error < 0:
         log.info("Stopping AWG failed! - {}".format(error))
-    error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_HIZ)
-    if error < 0:
-        log.info("Putting AWG into HiZ failed! - {}".format(error))
+    if turnOff:
+        error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_HIZ)
+        if error < 0:
+            log.info("Putting AWG into HiZ failed! - {}".format(error))
     __awg.close()
     log.info("Finished stopping and closing AWG")
     

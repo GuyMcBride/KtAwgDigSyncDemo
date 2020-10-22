@@ -63,7 +63,7 @@ def open(slot, channel):
     return __awg
 
 def configure(experiment, refChannel = 0):
-    if "main" in experiment:
+    if "Main" in experiment:
         error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_AWG)
         if error < 0:
             log.warn("Error Setting Waveshape - {}".format(error))
@@ -88,7 +88,7 @@ def configure(experiment, refChannel = 0):
         error = __awg.channelFrequency(_channel, 10.0E+06)
         if error < 0:
             log.warn("Error Setting default Frequency - {}".format(error))
-        error = __awg.channelAmplitude(_channel, 0.5)
+        error = __awg.channelAmplitude(_channel, 0.1)
         if error < 0:
             log.warn("Error Setting Amplitude - {}".format(error))
     elif ("MultiLo" in experiment):

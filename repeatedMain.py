@@ -55,18 +55,18 @@ if (__name__ == '__main__'):
     AWG_SLOT = 2
     AWG_CHANNEL = 4
     
-    AWG_DELAYS = [0e-6, 0E-09]
-    DIGITIZER_DELAY = 500e-9
+    AWG_DELAYS = [10e-6]
+    DIGITIZER_DELAY = 00e-9
     
     PULSE_WIDTH =10E-06
-    CAPTURE_WIDTH = 500E-06
-    CARRIER_FREQUENCIES = [10E+06, 100E+6]
-    CARRIER_AMPLITUDES = [1.0, 0.5]
+    CAPTURE_WIDTH = 50E-06
+    CARRIER_FREQUENCIES = [10E+06]
+    CARRIER_AMPLITUDES = [1.0]
     
-    PRI = 100.0E-3
+    PRI = 100.0E-6
     NUMBER_OF_PULSES = 10
     
-    PULSES_TO_PLOT = 2
+    PULSES_TO_PLOT = 10
 
     setup_logging()
 
@@ -87,8 +87,8 @@ if (__name__ == '__main__'):
     awg.loadWaveforms(waves, AWG_DELAYS)
     dig.digitize(DIGITIZER_DELAY, NUMBER_OF_PULSES)
 
-    hvi_path = os.getcwd() + '\\SyncStartRepeated.hvi'
-    hvi_mapping = {'AWG0': awg_h, 'DIG': dig.handle}
+    hvi_path = os.getcwd() + '\\SyncStartRepeated_A1_D1.hvi'
+    hvi_mapping = {'AWG0': awg_h, 'DIG0': dig.handle}
     hvi.init(hvi_path, hvi_mapping)
 
     hvi.setupConstants(NUMBER_OF_PULSES, PRI)
@@ -96,7 +96,7 @@ if (__name__ == '__main__'):
     hvi.start()
 
     # Allow the memory to partially fill.
-    time.sleep(PRI * NUMBER_OF_PULSES / 100)
+    time.sleep(PRI * NUMBER_OF_PULSES/100)
     log.info("Reading Waveforms....")
 
     plt.xlabel("us")
@@ -111,5 +111,7 @@ if (__name__ == '__main__'):
     elapsed_time = time.time() - start_time
     log.info("Read {} Msamples in {}s".format((NUMBER_OF_PULSES * dig.pointsPerCycle) / 1e6, elapsed_time))
     log.info("Data rate: {}Msa/s in lumps of {} samples".format((NUMBER_OF_PULSES * dig.pointsPerCycle) / elapsed_time / 1e6, dig.pointsPerCycle))
+    log.info("AWG Loop counter: {}".format(awg.readRegister(15)))
+    log.info("DIG Loop counter: {}".format(dig.readRegister(15)))
     hvi.close()
     awg.close()

@@ -28,10 +28,14 @@ def timebase(start, stop, sample_rate):
 
 def filterWave(sampleRate, bandwidth, wave):
     superRate = 10 * sampleRate
-    nyquist = superRate / 2
-    cutoff = bandwidth / nyquist
-    b, a = signal.bessel(4, cutoff, 'low')
-    filtered = signal.filtfilt(b, a, wave)
+    dx = 1 / superRate
+    sigma = 0.3 / bandwidth
+    gx = np.arange(-3*sigma, 3*sigma, dx)
+    gaussian = np.exp(-(gx/sigma)**2/2)
+    filtered = signal.fftconvolve(wave, gaussian, mode="full") / np.sum(gaussian)
+    filtered = filtered[(int(len(gaussian) / 2)):(-1*int(len(gaussian) / 2)) + 1]
+    normalize = np.max(wave) / np.max(filtered)
+    filtered = filtered * normalize
     return (filtered)
 
 
@@ -109,10 +113,11 @@ def createMat(sampleRate, filename, wave):
 
 if (__name__ == '__main__'):
     SAMPLE_RATE = 1e+09
-    SYSTEM_BANDWIDTH = 1E+06
+    SYSTEM_BANDWIDTH = 1000E+06
     
-    WIDTH = 1e-6
+    WIDTH = 10e-6
     PRI = 100e-6
+    AMPLITUDE = 0.5
     PULSE_TRAIN = [0, 1, 1, 1, 0, 0, 1, 1, 0]   # Relative to time = 0. We need some lead-in time for the pulse shaping
     
 #    waveform = createPulseTrain(SAMPLE_RATE, WIDTH, PRI, PULSE_TRAIN, SYSTEM_BANDWIDTH)
@@ -121,7 +126,7 @@ if (__name__ == '__main__'):
 #    tone = createTone(SAMPLE_RATE, 10E6, 0, t)
 #    rfWave = wave * tone
     
-    pulse = createPulse(SAMPLE_RATE, WIDTH, SYSTEM_BANDWIDTH)
+    pulse = createPulse(SAMPLE_RATE, WIDTH, SYSTEM_BANDWIDTH, AMPLITUDE)
     
     
 #    plt.plot(t, wave) 

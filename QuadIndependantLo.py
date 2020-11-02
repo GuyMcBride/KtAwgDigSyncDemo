@@ -15,6 +15,20 @@ import AWG as awg
 import hvi
 import pulses as pulseLab
 
+def calcAandB(f, fs=1E9):
+    S = 5
+    T = 8
+    K = (f / fs) * (S / T) * 2**25
+    A = int(K)
+    B = round((K-A) * 5**10) 
+    return A, B
+
+def interweavePulses(pulses):
+    interweaved = np.empty(len(pulses[0]) * 5)
+    for ii in range(len(pulses)):
+        interweaved[ii::5] = pulses[ii]
+    return interweaved
+
 log = logging.getLogger(__name__)
 
 SAMPLE_RATE = 1E+09
@@ -29,6 +43,8 @@ PULSE_WIDTHS = [2E-06, 1E-06, 0.5E-06, 0.25E-06]
 PULSE_BANDWIDTHS = [10E+06, 1E+06, 1E+06, 1E+06]
 PULSE_FREQUENCIES = [20E+6, 50E+06, 50.5E+06, 100E+06]
 PULSE_AMPLITUDES = [0.5, 0.25, 0.125, 0.125]
+PULSE_OFFSETS = [10E-6, 11.50E-6, 30E-6, 40E-6]
+PULSE_PERIOD = 50E-6
 
 awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
 
@@ -36,14 +52,6 @@ awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
 #awg.loadFpgaImage("MULTLO_CLF_K41_3_77.sbp")
 awg.loadFpgaImage("test_test_partial.sbp")
 
-
-def calcAandB(f, fs=1E9):
-    S = 5
-    T = 8
-    K = (f / fs) * (S / T) * 2**25
-    A = int(K)
-    B = round((K-A) * 5**10) 
-    return A, B
 
 [A, B] = calcAandB(PULSE_FREQUENCIES[0])
 awg.writeFpgaRegister(0, 0, A)
@@ -69,15 +77,19 @@ hvi.init(hvi_path, hvi_mapping)
 
 rawPulses = []
 for ii in range(len(PULSE_WIDTHS)):
-    pulse = pulseLab.createPulse(SAMPLE_RATE, PULSE_WIDTHS[ii], PULSE_BANDWIDTHS[ii], 1)
+    pulse = pulseLab.createPulse(SAMPLE_RATE, 
+                                 PULSE_WIDTHS[ii], 
+                                 PULSE_BANDWIDTHS[ii], 
+                                 PULSE_AMPLITUDES[ii], 
+                                 PULSE_PERIOD, 
+                                 PULSE_OFFSETS[ii])
     rawPulses.append(pulse.wave)
 #    plt.plot(pulse.timebase, pulse.wave)
 
+interleavedPulses = interweavePulses(rawPulses)
+
 tic = time.perf_counter()
-scaledPulses = []
-for ii in range(len(rawPulses)):
-    scaledPulses.append(rawPulses[ii] * PULSE_AMPLITUDES[ii])
-awg.loadWaveforms(scaledPulses)
+awg.loadWaveform(interleavedPulses, 0)
 
 toc = time.perf_counter()
 log.info("Calculating and downloading waveforms took: {}ms".format((toc - tic) / 1E-03))

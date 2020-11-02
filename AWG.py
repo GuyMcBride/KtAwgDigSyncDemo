@@ -192,6 +192,13 @@ def writeFpgaRegister(port, address, value):
         log.error('Address: {}'.format(address))
         log.error('Buffer [{}]'.format(buf))
 
+def readFpgaRegister(port, address):
+    error = __awg.FPGAreadPCport(port, 1, address, key.SD_AddressingMode.FIXED, key.SD_AccessMode.NONDMA)
+    if error < 0:
+        log.error('WriteRegister: {} {}'.format(error, key.SD_Error.getErrorMessage(error)))
+        log.error('Address: {}'.format(address))
+    return error
+
 if (__name__ == '__main__'):
 
     print("WARNING - YOU ARE RUNNING TEST CODE")

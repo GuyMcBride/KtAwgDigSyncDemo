@@ -62,15 +62,23 @@ def createPulseTrain(sampleRate, pulseWidth, repRate, pulseTrain, bandwidth):
     return Waveform(awgWave, t)
 
 
-def createPulse(sampleRate, pulseWidth, bandwidth, amplitude):
+def createPulse(sampleRate, pulseWidth, bandwidth, amplitude=1, period=0, offset=0):
     superRate = 20 * sampleRate
+    # If no period is given,
     # We need to create a significantly larger wave than the pulse width to
     # allow for the 'lead in' and 'lead out' of the 'shaped' waveform
-    leadIn = 0.45 / bandwidth
-    leadInSamples = int(leadIn * superRate)
+    if period == 0:
+        leadIn = 0.45 / bandwidth
+        leadInSamples = int(leadIn * superRate)
+        leadOutSamples = leadInSamples
+    else:
+        leadIn = offset
+        leadInSamples = int(leadIn * superRate)
+        leadOut = period - offset - pulseWidth
+        leadOutSamples = int(leadOut * superRate)
     wave = np.concatenate([np.zeros(leadInSamples), 
                            np.ones(int(pulseWidth * superRate)), 
-                           np.zeros(leadInSamples)])
+                           np.zeros(leadOutSamples)])
     filteredWave = filterWave(sampleRate, bandwidth , wave)
     awgWave = signal.decimate(filteredWave, 10)
     # Clamp filter output to zero at the end of the pulse shaping

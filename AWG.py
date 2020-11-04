@@ -74,12 +74,13 @@ class AWG:
         self._handle.waveformFlush()
         if error < 0:
             log.info("Error Flushing waveforms - {}".format(error))
-        self.channels = 0
+        self._channels = 0
         for channel in range(1, 5):
-            error = self._handle.AWGflush(_channel)
+            error = self._handle.AWGflush(self._channels)
             if error < 0:
                 log.info("Error Flushing AWG - {}".format(error))
-            else self._channels = self._channels + 1
+            else:
+                self._channels = self._channels + 1
         log.info("Finished setting up AWG in slot {}...".format(slot))
             
     
@@ -230,7 +231,7 @@ if (__name__ == '__main__'):
     wave = np.sin(20E+06 *2 * np.pi * t)
     
     awg = AWG(2)
-    print("Number of AWG channels found in slot {}: {}".format awg.slot, awg.channels)
+    print("Number of AWG channels found in slot {}: {}".format(awg.slot, awg.channels))
     awg.loadWaveform(wave, 0)
     awg.handle.AWGtrigger(1)
 

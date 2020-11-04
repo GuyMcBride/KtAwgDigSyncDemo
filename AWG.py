@@ -78,7 +78,7 @@ def configure(experiment, refChannel = 0):
         log.info("Setting front panel trigger to Input...")
         error = __awg.triggerIOconfig(key.SD_TriggerDirections.AOU_TRG_IN)
         if error < 0:
-            log.warn(msg, args, kwargs)("Error Setting Trigger to input - {}".format(error))
+            log.warn("Error Setting Trigger to input - {}".format(error))
         error = __awg.channelWaveShape(_channel, key.SD_Waveshapes.AOU_SINUSOIDAL)
         if error < 0:
             log.warn("Error Setting Waveshape - {}".format(error))

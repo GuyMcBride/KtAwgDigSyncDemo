@@ -8,12 +8,13 @@ Created on Tue May 14 10:32:05 2019
 import sys
 import numpy as np
 import logging
-from pulses import timebase
 
 log = logging.getLogger(__name__)
 
 sys.path.append(r'C:\Program Files (x86)\Keysight\SD1\Libraries\Python')
 import keysightSD1 as key
+
+from pulses import timebase
 
 
 class DigitizerError(Exception):

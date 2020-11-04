@@ -8,6 +8,7 @@ Created on Tue May 14 10:32:05 2019
 import sys
 import numpy as np
 import logging
+from pulses import timebase
 
 log = logging.getLogger(__name__)
 
@@ -34,14 +35,6 @@ class DigitizerError(Exception):
 class Digitizer:
     """Represents a PXIe M310xA type Digitizer"""
 
-    @staticmethod
-    def timebase(start, stop, sample_rate):
-        start_sample = int(start * sample_rate)
-        stop_sample = int(stop * sample_rate)
-        timebase = np.arange(start_sample, stop_sample)
-        timebase = timebase / sample_rate
-        return(timebase)
-
     @property
     def handle(self):
         return self._handle
@@ -56,7 +49,7 @@ class Digitizer:
         self.sampleRate = 500E+06
         self.channels = channels
         self._slot = slot
-        self.timeStamps = self.timebase(0, captureTime, self.sampleRate)
+        self.timeStamps = timebase(0, captureTime, self.sampleRate)
         self.pointsPerCycle = len(self.timeStamps)
 
         # Discover the chassis number
@@ -131,6 +124,6 @@ class Digitizer:
 
 if (__name__ == '__main__'):
     print("WARNING - YOU ARE RUNNING TEST CODE")
-    dig = Digitizer(5, [1], 100e-6)
+    dig = Digitizer(7, [1], 100e-6)
     print(dig.digitize(0))
     data = dig.get_data_raw()

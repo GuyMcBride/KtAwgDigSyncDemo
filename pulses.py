@@ -10,7 +10,6 @@ M8195A
 
 import time
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import signal
 from scipy import io as sio
 from collections import namedtuple as namedtuple
@@ -120,6 +119,9 @@ def createMat(sampleRate, filename, wave):
 ######################################################
 
 if (__name__ == '__main__'):
+
+    import matplotlib.pyplot as plt
+
     SAMPLE_RATE = 1e+09
     SYSTEM_BANDWIDTH = 1000E+06
     

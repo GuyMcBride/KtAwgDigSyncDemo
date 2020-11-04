@@ -39,11 +39,11 @@ AWG_REF_CHANNEL = 3
 
 LOOPS = 4
 
-PULSE_WIDTHS = [2E-06, 1E-06, 0.5E-06, 0.25E-06]
-PULSE_BANDWIDTHS = [10E+06, 1E+06, 1E+06, 1E+06]
-PULSE_FREQUENCIES = [20E+6, 50E+06, 50.5E+06, 100E+06]
-PULSE_AMPLITUDES = [0.5, 0.25, 0.125, 0.125]
-PULSE_OFFSETS = [10E-6, 11.50E-6, 30E-6, 40E-6]
+PULSE_WIDTHS = [20E-06, 20E-06, 20E-06, 5E-06]
+PULSE_BANDWIDTHS = [1E+06, 1E+06, 1E+06, 1E+06]
+PULSE_FREQUENCIES = [10E+6, 30E+06, 50E+06, 70E+06]
+PULSE_AMPLITUDES = [0.6, -0.2, 0.12, -0.086]
+PULSE_OFFSETS = [10E-6, 10E-6, 10E-6, 10E-6]
 PULSE_PERIOD = 50E-6
 
 awg_h = awg.open(AWG_SLOT, AWG_CHANNEL)
@@ -71,16 +71,16 @@ awg.writeFpgaRegister(0, 8, 1)
 
 awg.configure("MultiLo", AWG_REF_CHANNEL)
 
-hvi_path = os.getcwd() + '\\MultiLO_CLF.hvi'
+hvi_path = os.getcwd() + '\\QuadLO.hvi'
 hvi_mapping = {'AWG0': awg_h}
 hvi.init(hvi_path, hvi_mapping)
 
 rawPulses = []
 for ii in range(len(PULSE_WIDTHS)):
-    pulse = pulseLab.createPulse(SAMPLE_RATE, 
+    pulse = pulseLab.createPulse(SAMPLE_RATE / 5, 
                                  PULSE_WIDTHS[ii], 
                                  PULSE_BANDWIDTHS[ii], 
-                                 PULSE_AMPLITUDES[ii], 
+                                 PULSE_AMPLITUDES[ii] / 1.5, 
                                  PULSE_PERIOD, 
                                  PULSE_OFFSETS[ii])
     rawPulses.append(pulse.wave)
@@ -97,10 +97,7 @@ log.info("Calculating and downloading waveforms took: {}ms".format((toc - tic) /
 tic = time.perf_counter()
 constants = []
 constants.append(hvi.constant('AWG0', 'NumLoops', LOOPS, ''))
-constants.append(hvi.constant('AWG0', 'Amplitude1', PULSE_AMPLITUDES[0], 'V'))
-constants.append(hvi.constant('AWG0', 'Amplitude2', PULSE_AMPLITUDES[1], 'V'))
-constants.append(hvi.constant('AWG0', 'Frequency1', PULSE_FREQUENCIES[0], 'Hz'))
-constants.append(hvi.constant('AWG0', 'Frequency2', PULSE_FREQUENCIES[1], 'Hz'))
+constants.append(hvi.constant('AWG0', 'Source', 1, ''))
 hvi.setConstants(constants)
 
 toc = time.perf_counter()
